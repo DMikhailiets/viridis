@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<resources>
+  <color name="colorPrimary">#023c69</color>
+  <color name="splashscreen_background">#FFFFFF</color>
+  <color name="iconBackground">#FFFFFF</color>
+  <!-- for react-native-push-notifications -->
+  <color name="white">#FFF</color>
+</resources>
+
+<!-- for react-native-push-notifications -->
+
+<!-- <resources>
+    <color name="white">#FFF</color>
+</resources> -->
