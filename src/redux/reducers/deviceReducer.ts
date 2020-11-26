@@ -3,8 +3,7 @@ import { AppState } from "../store"
 import redux from 'redux'
 import { Device } from "react-native-ble-plx"
 import { DeviceReducerState, MDevice } from "../../core/types"
-import { base64ToBinaryArray, generateId, getFullByte, getInAdditionalCode } from '../../utils';
-import axios from "axios"
+import { base64ToBinaryArray, generateId, getFullByte, getInAdditionalCode, decodeDataFromBinary} from '../../utils';
 
 let push = 0
 
@@ -64,11 +63,16 @@ let deviceReducer = (state: AppState = initialState, action: any) => {
             let mantisa =  glucoseValueBytes.slice(4)
             let glucose =  (parseInt(mantisa, 2) * (10**exp)).toFixed(2) 
             let date = new Date()
+            let meta = decodeDataFromBinary(action.allMeasurements)
             if(state.allMeasurements.length === 0 || (state.allMeasurements[state.allMeasurements.length -1] && state.allMeasurements[state.allMeasurements.length -1].value !== glucose)){
                 return {
                     ...state, allMeasurements: [...state.allMeasurements, {
+
                         date: `${date.getFullYear()}.${date.getMonth()}.${date.getDate()} ${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}`,
                         value: glucose,
+                        sequenceNumber: meta.SequenceNumber,
+                        baseTime: meta.BaseTime,
+                        timeOffset: meta.TimeOffset,
                         id: generateId()+ glucose + date.getMilliseconds()
                     }]
                 }
@@ -76,11 +80,14 @@ let deviceReducer = (state: AppState = initialState, action: any) => {
         }
         case('SET_MEASUREMENTS'): {
             let data = base64ToBinaryArray(action.measurement)
+        
             let glucoseValueBytes = getFullByte(data[13].toString(2)) + getFullByte(data[12].toString(2))
             let exp = getInAdditionalCode(glucoseValueBytes.slice(0,4))
             let mantisa =  glucoseValueBytes.slice(4)
             let glucose =  (parseInt(mantisa, 2) * (10**exp)).toFixed(2) 
             //debugger
+            let meta = decodeDataFromBinary(action.measurement)
+            
             let date = new Date()
             if(state.currentValue.length === 0 || (state.currentValue[state.currentValue.length -1] && state.currentValue[state.currentValue.length -1].value !== glucose)){
                 if ( parseFloat(glucose) > 7 && push < 1) {
@@ -95,7 +102,10 @@ let deviceReducer = (state: AppState = initialState, action: any) => {
                 return {
                     ...state, currentValue: [...state.currentValue, {
                         date: `${date.getFullYear()}.${date.getMonth()}.${date.getDate()} ${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}`,
-                        value: glucose
+                        value: glucose,
+                        sequenceNumber: meta.SequenceNumber,
+                        baseTime: meta.BaseTime,
+                        timeOffset: meta.TimeOffset
                     }]
                 }                
             } else return state

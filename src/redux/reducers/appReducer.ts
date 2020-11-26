@@ -90,8 +90,9 @@ export const connectAndGetServicesAndCharacteristics = (device: any, isConnected
         const getCharachteristicsData = async (deviceId: string, serviceUUID: string, mainCharacteristicUUID: string, characteristicUUID2: string) => {
             manager.monitorCharacteristicForDevice(deviceId,serviceUUID,mainCharacteristicUUID,
                 (error, characteristic: any) => {
-                   if(counter > 31){
+                   if(counter > 31){   
                     dispatch(setMeasurements(characteristic.value))
+                    
                    }
                
                     //dispatch(setLog('Listening'))
