@@ -8,7 +8,7 @@ let Cart = (props: any) => {
         <View style={styles.cart}>
             <View style={styles.subCart}>
               
-    <Text style={styles.title}>{`${props.currentValue.value}`}</Text>
+    <Text style={styles.title}>{`${props.currentValue.glucose}`}</Text>
               <Text style={styles.text}>current value</Text>
             </View>
             <View style={styles.subCart1}>

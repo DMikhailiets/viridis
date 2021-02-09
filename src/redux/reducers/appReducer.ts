@@ -3,7 +3,7 @@ import { AppState } from "../store"
 import redux, { Action } from 'redux'
 import { AppReducerState } from "../../core/types"
 import { BleError, BleManager, Device, Service } from 'react-native-ble-plx'
-import { setAllMeasurements, setAllServices, setDeviceData, setFoundDevice, setMeasurements } from "./deviceReducer"
+import { saveMeasurements, setAllMeasurements, setAllServices, setDeviceData, setFoundDevice, setMeasurements } from "./deviceReducer"
 import { base64Decode, bytesToBase64 } from "../../utils/base64decode"
 import { base64ToBinaryArray, binaryArrayToBase64, getFullByte, getInAdditionalCode } from "../../utils"
 import PushNotification from 'react-native-push-notification'
@@ -92,7 +92,7 @@ export const connectAndGetServicesAndCharacteristics = (device: any, isConnected
                 (error, characteristic: any) => {
                    if(counter > 31){   
                     dispatch(setMeasurements(characteristic.value))
-                    
+                    dispatch(saveMeasurements(characteristic.value))
                    }
                
                     //dispatch(setLog('Listening'))

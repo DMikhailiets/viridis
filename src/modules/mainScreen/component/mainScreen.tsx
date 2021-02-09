@@ -10,7 +10,6 @@ import { Notification } from '../../../modules'
 import * as firebase from 'firebase'
 import styles from './mainScreenStyle'
 
-
 let MainScreenComponent: React.FC<MainScreenComponentPropsType> = (
   {
     deviceData, 

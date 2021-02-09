@@ -79,7 +79,10 @@ export type DebugContainerPropsType = {
 }
 
 export type DebugComponentPropsType = {
-    log: Array<any>
+    log: Array<any>,
+    resetMeasurementsDataFromRedux: Function
+    resetAllMeasurementsData: Function
+    resetMeasurementsDataFromLocalstorage: Function
 }
 
 export type NotificationContainerPropsType = {

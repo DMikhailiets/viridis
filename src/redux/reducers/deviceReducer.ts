@@ -1,9 +1,9 @@
-import { fetchScannedDevicesList } from './../selectors/deviceSelector';
 import { AppState } from "../store"
 import redux from 'redux'
 import { Device } from "react-native-ble-plx"
-import { DeviceReducerState, MDevice } from "../../core/types"
-import { base64ToBinaryArray, generateId, getFullByte, getInAdditionalCode, decodeDataFromBinary} from '../../utils';
+import { DeviceReducerState} from "../../core/types"
+import { storeDataInLocalStorage, getDataFromLocalStorage, resetLocalStorageData } from '../../localStorage'
+import { decodeDataFromBinary } from "../../utils"
 
 let push = 0
 
@@ -57,40 +57,17 @@ let deviceReducer = (state: AppState = initialState, action: any) => {
             }
         }
         case('SET_ALL_MEASUREMENTS'): {
-            let data = base64ToBinaryArray(action.allMeasurements)
-            let glucoseValueBytes = getFullByte(data[13].toString(2)) + getFullByte(data[12].toString(2))
-            let exp = getInAdditionalCode(glucoseValueBytes.slice(0,4))
-            let mantisa =  glucoseValueBytes.slice(4)
-            let glucose =  (parseInt(mantisa, 2) * (10**exp)).toFixed(2) 
-            let date = new Date()
-            let meta = decodeDataFromBinary(action.allMeasurements)
-            if(state.allMeasurements.length === 0 || (state.allMeasurements[state.allMeasurements.length -1] && state.allMeasurements[state.allMeasurements.length -1].value !== glucose)){
+            let measurement = decodeDataFromBinary(action.allMeasurements)
+            if(state.allMeasurements.length === 0 || (state.allMeasurements[state.allMeasurements.length -1] && state.allMeasurements[state.allMeasurements.length -1].value !== measurement.glucose)){
                 return {
-                    ...state, allMeasurements: [...state.allMeasurements, {
-
-                        date: `${date.getFullYear()}.${date.getMonth()}.${date.getDate()} ${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}`,
-                        value: glucose,
-                        sequenceNumber: meta.SequenceNumber,
-                        baseTime: meta.BaseTime,
-                        timeOffset: meta.TimeOffset,
-                        id: generateId()+ glucose + date.getMilliseconds()
-                    }]
+                    ...state, allMeasurements: [...state.allMeasurements, measurement]
                 }
             } else return state
         }
         case('SET_MEASUREMENTS'): {
-            let data = base64ToBinaryArray(action.measurement)
-        
-            let glucoseValueBytes = getFullByte(data[13].toString(2)) + getFullByte(data[12].toString(2))
-            let exp = getInAdditionalCode(glucoseValueBytes.slice(0,4))
-            let mantisa =  glucoseValueBytes.slice(4)
-            let glucose =  (parseInt(mantisa, 2) * (10**exp)).toFixed(2) 
-            //debugger
-            let meta = decodeDataFromBinary(action.measurement)
-            
-            let date = new Date()
-            if(state.currentValue.length === 0 || (state.currentValue[state.currentValue.length -1] && state.currentValue[state.currentValue.length -1].value !== glucose)){
-                if ( parseFloat(glucose) > 7 && push < 1) {
+            let measurement = decodeDataFromBinary(action.measurement)
+            if(state.currentValue.length === 0 || (state.currentValue[state.currentValue.length -1] && state.currentValue[state.currentValue.length -1].value !== measurement.glucose)){
+                if ( parseFloat(measurement.glucose) > 7 && push < 1) {
                      push = push + 1
                     return {
                         ...state, notifications: {
@@ -100,18 +77,16 @@ let deviceReducer = (state: AppState = initialState, action: any) => {
                     }
                 }
                 return {
-                    ...state, currentValue: [...state.currentValue, {
-                        date: `${date.getFullYear()}.${date.getMonth()}.${date.getDate()} ${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}`,
-                        value: glucose,
-                        sequenceNumber: meta.SequenceNumber,
-                        baseTime: meta.BaseTime,
-                        timeOffset: meta.TimeOffset
-                    }]
+                    ...state, currentValue: [...state.currentValue, measurement]
                 }                
             } else return state
-        }        
+        }   
+        case ('RESET_REDUX_DATA'): {
+            return {
+                ...state, currentValue: [], allMeasurements: []
+            }
+        }     
         default:{
-            //debugger
             return state
         }
             
@@ -124,5 +99,26 @@ export const setDeviceData = ((deviceData: Device) => ({type: 'SET_DEVICE_DATA',
 export const setFoundDevice = ((device: Device) => ({type: 'SET_FOUND_DEVICE', device}))
 export const setAllServices = ((allServices: any) => ({type: 'SET_ALL_SERVICES_AND_CHARACTERISTICS', allServices}))
 export const setMeasurements = ((measurement: any) => ({type: 'SET_MEASUREMENTS', measurement}))
+export const resetReduxtData = (() => ({type: 'RESET_REDUX_DATA'}))
+
+export const saveMeasurements = (data: any) => async (dispatch: redux.Dispatch) => {
+    let measurement = decodeDataFromBinary(data)
+    await storeDataInLocalStorage(measurement)
+    const response = await getDataFromLocalStorage()
+    console.log(response)
+}
+
+export const resetMeasurementsDataFromLocalstorage = () => async () => {
+    await resetLocalStorageData()
+}
+
+export const resetMeasurementsDataFromRedux = () => async (dispatch: redux.Dispatch) => {
+    dispatch(resetReduxtData())
+}
+
+export const resetAllMeasurementsData = () => async (dispatch: redux.Dispatch) => {
+    await resetLocalStorageData()
+    dispatch(resetReduxtData())
+}
 
 export default deviceReducer
