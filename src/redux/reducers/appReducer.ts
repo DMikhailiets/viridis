@@ -1,43 +1,23 @@
 import {useState} from 'react'
 import { AppState } from "../store"
-import redux, { Action } from 'redux'
+import redux from 'redux'
 import { AppReducerState } from "../../core/types"
 import { BleError, BleManager, Device, Service } from 'react-native-ble-plx'
 import { saveMeasurements, setAllMeasurements, setAllServices, setDeviceData, setFoundDevice, setMeasurements } from "./deviceReducer"
-import { base64Decode, bytesToBase64 } from "../../utils/base64decode"
-import { base64ToBinaryArray, binaryArrayToBase64, getFullByte, getInAdditionalCode } from "../../utils"
-import PushNotification from 'react-native-push-notification'
+import { statuses } from '../../core/enums'
 
 let counter = 0
 
 let initialState: AppReducerState = {
     log: [],
-    isScanning: false,
-    connectedToViridis: false,
-    onConnection: false,
-    isOnGetAllMeasurements: false
+    appStatus: statuses.opened
 }
   
 let appReducer = (state: AppState = initialState, action: any) => {
     switch(action.type) {
-        case('SET_IS_SCANNING'): {
+        case('SET_STATUS'): {
             return {
-                ...state, isScanning: action.value
-            }
-        }
-        case('CHANGE_CONNECTED_TO_VIRIDIS'): {
-            return {
-                ...state, connectedToViridis: action.value
-            }
-        }
-        case 'CHANGE_ON_CONNECTION': {
-            return {
-                ...state, onConnection: action.value
-            }
-        }
-        case 'CHANGE_IS_ON_GET_ALL_MEASUREMENTS': {
-            return {
-                ...state, isOnGetAllMeasurements: action.value
+                ...state, appStatus: action.status
             }
         }
         case('SET_LOG_MESSAGE'): {
@@ -64,17 +44,14 @@ let appReducer = (state: AppState = initialState, action: any) => {
     }
 }
 
-export const setIsScanning = ((value: boolean)=>({type: 'SET_IS_SCANNING', value}))
-export const setConnectedToViridis = ((value: boolean)=>({type: 'CHANGE_CONNECTED_TO_VIRIDIS', value}))
-export const setOnConnection = ((value: boolean)=>({type: 'CHANGE_ON_CONNECTION', value}))
-export const setIsOnGetAllMeasurements = ((value: boolean)=>({type: 'CHANGE_IS_ON_GET_ALL_MEASUREMENTS', value}))
+export const setStatus = ((status: number)=>({type: 'SET_STATUS', status}))
 export const setLog = ((logMessage: string) => ({type: 'SET_LOG_MESSAGE', logMessage}))
 export const setError = ((errorMessage: string) => ({type: 'SET_ERROR_MESSAGE', errorMessage}))
 
 const manager = new BleManager()
 
 export const scanDevices = () => async (dispatch: redux.Dispatch) => {
-    dispatch(setIsScanning(true))
+    dispatch(setStatus(statuses.isScanning))
     manager.startDeviceScan(null, null, (error: BleError | null, device: Device | null) => {
         dispatch(setLog('Scanning...'))
         if(device != null) dispatch(setFoundDevice(device))
@@ -85,19 +62,18 @@ export const scanDevices = () => async (dispatch: redux.Dispatch) => {
             dispatch(setLog("Viridis Libre device was found"))
             dispatch(setDeviceData(device))
             manager.stopDeviceScan()
-            dispatch(setIsScanning(false))
+            dispatch(setStatus(statuses.deviceIsFound))
         }
     });
 }
 
-export const connectAndGetServicesAndCharacteristics = (device: any, isConnected: boolean) => async (dispatch: redux.Dispatch) => {
+export const connectToDevice = (device: any, deviceStatus: number) => async (dispatch: redux.Dispatch) => {
+    debugger
     try {
-        if (isConnected === false ){
-            dispatch(setOnConnection(true))
-            const connection = await manager.connectToDevice(device.id)
-            dispatch(setOnConnection(false))
-            dispatch(setConnectedToViridis(true))
-            debugger
+        if (deviceStatus === statuses.deviceIsFound ){
+            dispatch(setStatus(statuses.isConnecting))
+            await manager.connectToDevice(device.id)
+            dispatch(setStatus(statuses.deviceIsConnected))
         }
         dispatch(setLog("Viridis Libre device was connected"))
         await manager.discoverAllServicesAndCharacteristicsForDevice(device.id)
@@ -117,15 +93,18 @@ export const connectAndGetServicesAndCharacteristics = (device: any, isConnected
     } catch(error){
         dispatch(setError(error + ''))
         await manager.cancelDeviceConnection(device.id)
-        dispatch(setConnectedToViridis(false))
-        dispatch(setOnConnection(false))
+        dispatch(setStatus(statuses.connectionError))
     } finally {
         //dispatch(setConnectedToViridis(false))
-        dispatch(setOnConnection(false))
+        dispatch(setStatus(statuses.inFinaly))
         // await manager.cancelDeviceConnection(device.id)
     }
 }
 
+export const disconnectDevice = (device: any, deviceStatus: number) => async (dispatch: redux.Dispatch) => {
+    await manager.cancelDeviceConnection(device.id)
+    dispatch(setStatus(statuses.deviceIsDisconnected))
+}
 // export const connectAndGetGlucoseValue = (device: any) => async (dispatch: redux.Dispatch) => {
 //     debugger
 //     dispatch(setConnectedToViridis(true))
@@ -151,7 +130,7 @@ export const connectAndGetServicesAndCharacteristics = (device: any, isConnected
 // }
 
 export const getAllCharachteristicsData = (deviceId: string, serviceUUID: string, mainCharacteristicUUID: string, characteristicUUID2: string) => async (dispatch: redux.Dispatch) => {
-    //dispatch(setIsOnGetAllMeasurements(true))
+    dispatch(setStatus(statuses.isOnGetAllMeasurements))
     manager.monitorCharacteristicForDevice(deviceId,serviceUUID,mainCharacteristicUUID,
         (error, characteristic: any) => {
             if (error) {

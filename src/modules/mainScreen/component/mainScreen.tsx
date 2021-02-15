@@ -1,14 +1,10 @@
-import React, { useState, useEffect } from 'react'
-import { View, StyleSheet, Image } from 'react-native'
-import { BleManager } from 'react-native-ble-plx'
+import React from 'react'
+import { View, Image } from 'react-native'
 import { Text } from '../../../../components/Themed'
 import { Cart } from '../../../components'
 import { MainScreenComponentPropsType } from '../../../core/types'
-import { setLog } from '../../../redux/reducers/appReducer'
-import { base64Decode } from '../../../utils'
-import { Notification } from '../../../modules'
-import * as firebase from 'firebase'
 import styles from './mainScreenStyle'
+import { statuses } from '../../../core/enums'
 
 let MainScreenComponent: React.FC<MainScreenComponentPropsType> = (
   {
@@ -42,16 +38,16 @@ let Info = (props: any) => {
     <View style={styles.infoView}>
       
         {
-          props.appData.isScanning === true
+          props.appData.appStatus === statuses.isScanning
           ? <Searching/>
           : <Text></Text>
         } 
 
       
         {
-          props.appData.connectedToViridis === false  
-          ? <Text></Text>
-          : <Connected/>
+          props.appData.appStatus === statuses.deviceIsConnected  
+          ? <Connected/>
+          : <Text></Text>
         } 
         
     </View>

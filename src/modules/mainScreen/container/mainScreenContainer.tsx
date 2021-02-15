@@ -1,11 +1,10 @@
 import React, { useEffect } from 'react'
 import { connect } from 'react-redux'
-import { MainScreenContainerPropsType } from '../../../core/types'
-import { changeIsSearching } from '../../../redux/reducers'
-import { connectAndGetServicesAndCharacteristics, getAllCharachteristicsData, scanDevices } from '../../../redux/reducers/appReducer'
+import { connectToDevice, getAllCharachteristicsData, scanDevices } from '../../../redux/reducers/appReducer'
 import { fetchAppData, fetchAverage, fetchDeviceData, fetchMeasurements, fetchScannedDevicesList } from '../../../redux/selectors'
 import { AppState } from '../../../redux/store'
 import MainScreenComponent from '../component/mainScreen'
+import { statuses } from '../../../core/enums'
 
 let MainScreenContainer: React.FC<any> = (
     { 
@@ -15,26 +14,25 @@ let MainScreenContainer: React.FC<any> = (
         scannedDevicesList,
         scanDevices,
         getAllCharachteristicsData,
-        connectToViridis,
-        getServices,
-        connectAndGetServicesAndCharacteristics,
+        connectToDevice,
         average
     }) => {
     
     useEffect(() => {
-        if(deviceData === null && !appData.isScanning) {
+        if(appData.appStatus === statuses.opened) {
             scanDevices()
         }
-        if(deviceData && appData.connectedToViridis === false && !appData.onConnection){
+        debugger
+        if(appData.appStatus === statuses.deviceIsFound){
             debugger
-            connectAndGetServicesAndCharacteristics(deviceData, appData.connectedToViridis)
+            connectToDevice(deviceData, appData.appStatus)
         }
         if(deviceData && deviceData.id && appData.connectedToViridis === true && !appData.isOnGetAllMeasurements){
             debugger
             getAllCharachteristicsData(deviceData.id, "00001808-0000-1000-8000-00805f9b34fb", "00002a18-0000-1000-8000-00805f9b34fb", "00002a52-0000-1000-8000-00805f9b34fb")
         }
         
-      },[deviceData, appData.isScanning, appData.connectedToViridis])
+      },[deviceData, appData.appStatus])
     
     return <MainScreenComponent
                 measurements={measurements} 
@@ -54,7 +52,7 @@ export default connect(
         average: fetchAverage(state)
     }), {
         scanDevices,
-        connectAndGetServicesAndCharacteristics,
+        connectToDevice,
         getAllCharachteristicsData
     }
     )
