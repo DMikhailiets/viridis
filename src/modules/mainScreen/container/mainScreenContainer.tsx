@@ -2,18 +2,19 @@ import React, { useEffect } from 'react'
 import { connect } from 'react-redux'
 import { MainScreenContainerPropsType } from '../../../core/types'
 import { changeIsSearching } from '../../../redux/reducers'
-import { connectAndGetServicesAndCharacteristics, scanDevices } from '../../../redux/reducers/appReducer'
+import { connectAndGetServicesAndCharacteristics, getAllCharachteristicsData, scanDevices } from '../../../redux/reducers/appReducer'
 import { fetchAppData, fetchAverage, fetchDeviceData, fetchMeasurements, fetchScannedDevicesList } from '../../../redux/selectors'
 import { AppState } from '../../../redux/store'
 import MainScreenComponent from '../component/mainScreen'
 
-let MainScreenContainer: React.FC<MainScreenContainerPropsType> = (
+let MainScreenContainer: React.FC<any> = (
     { 
         deviceData, 
         appData,
         measurements,
         scannedDevicesList,
         scanDevices,
+        getAllCharachteristicsData,
         connectToViridis,
         getServices,
         connectAndGetServicesAndCharacteristics,
@@ -24,13 +25,14 @@ let MainScreenContainer: React.FC<MainScreenContainerPropsType> = (
         if(deviceData === null && !appData.isScanning) {
             scanDevices()
         }
-        if(deviceData && appData.connectedToViridis === false){
+        if(deviceData && appData.connectedToViridis === false && !appData.onConnection){
+            debugger
             connectAndGetServicesAndCharacteristics(deviceData, appData.connectedToViridis)
         }
-        // if(appData.connectedToViridis === true){
-        //     debugger
-        //     getServices(getServices)
-        // }
+        if(deviceData && deviceData.id && appData.connectedToViridis === true && !appData.isOnGetAllMeasurements){
+            debugger
+            getAllCharachteristicsData(deviceData.id, "00001808-0000-1000-8000-00805f9b34fb", "00002a18-0000-1000-8000-00805f9b34fb", "00002a52-0000-1000-8000-00805f9b34fb")
+        }
         
       },[deviceData, appData.isScanning, appData.connectedToViridis])
     
@@ -53,6 +55,7 @@ export default connect(
     }), {
         scanDevices,
         connectAndGetServicesAndCharacteristics,
+        getAllCharachteristicsData
     }
     )
 (MainScreenContainer)

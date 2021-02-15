@@ -14,6 +14,8 @@ let initialState: AppReducerState = {
     log: [],
     isScanning: false,
     connectedToViridis: false,
+    onConnection: false,
+    isOnGetAllMeasurements: false
 }
   
 let appReducer = (state: AppState = initialState, action: any) => {
@@ -26,6 +28,16 @@ let appReducer = (state: AppState = initialState, action: any) => {
         case('CHANGE_CONNECTED_TO_VIRIDIS'): {
             return {
                 ...state, connectedToViridis: action.value
+            }
+        }
+        case 'CHANGE_ON_CONNECTION': {
+            return {
+                ...state, onConnection: action.value
+            }
+        }
+        case 'CHANGE_IS_ON_GET_ALL_MEASUREMENTS': {
+            return {
+                ...state, isOnGetAllMeasurements: action.value
             }
         }
         case('SET_LOG_MESSAGE'): {
@@ -54,6 +66,8 @@ let appReducer = (state: AppState = initialState, action: any) => {
 
 export const setIsScanning = ((value: boolean)=>({type: 'SET_IS_SCANNING', value}))
 export const setConnectedToViridis = ((value: boolean)=>({type: 'CHANGE_CONNECTED_TO_VIRIDIS', value}))
+export const setOnConnection = ((value: boolean)=>({type: 'CHANGE_ON_CONNECTION', value}))
+export const setIsOnGetAllMeasurements = ((value: boolean)=>({type: 'CHANGE_IS_ON_GET_ALL_MEASUREMENTS', value}))
 export const setLog = ((logMessage: string) => ({type: 'SET_LOG_MESSAGE', logMessage}))
 export const setError = ((errorMessage: string) => ({type: 'SET_ERROR_MESSAGE', errorMessage}))
 
@@ -77,61 +91,38 @@ export const scanDevices = () => async (dispatch: redux.Dispatch) => {
 }
 
 export const connectAndGetServicesAndCharacteristics = (device: any, isConnected: boolean) => async (dispatch: redux.Dispatch) => {
-    dispatch(setConnectedToViridis(true))
     try {
         if (isConnected === false ){
-            await manager.connectToDevice(device.id)
+            dispatch(setOnConnection(true))
+            const connection = await manager.connectToDevice(device.id)
+            dispatch(setOnConnection(false))
+            dispatch(setConnectedToViridis(true))
+            debugger
         }
         dispatch(setLog("Viridis Libre device was connected"))
         await manager.discoverAllServicesAndCharacteristicsForDevice(device.id)
         dispatch(setLog('Permission for charachteristics was received'))
         let services = await manager.servicesForDevice(device.id)
         
-        const getCharachteristicsData = async (deviceId: string, serviceUUID: string, mainCharacteristicUUID: string, characteristicUUID2: string) => {
-            manager.monitorCharacteristicForDevice(deviceId,serviceUUID,mainCharacteristicUUID,
-                (error, characteristic: any) => {
-                   if(counter > 31){   
-                    dispatch(setMeasurements(characteristic.value))
-                    dispatch(saveMeasurements(characteristic.value))
-                   }
-               
-                    //dispatch(setLog('Listening'))
-                    //debugger
-                }) 
-            manager.monitorCharacteristicForDevice( deviceId, serviceUUID, characteristicUUID2,
-            (error, characteristic: any) => {})     
-            await manager.writeCharacteristicWithResponseForDevice(deviceId, serviceUUID, characteristicUUID2, 'AQY=')
-            
-        }
-
-        const getAllCharachteristicsData = async (deviceId: string, serviceUUID: string, mainCharacteristicUUID: string, characteristicUUID2: string) => {
-            
-            manager.monitorCharacteristicForDevice(deviceId,serviceUUID,mainCharacteristicUUID,
-                (error, characteristic: any) => {
-                    //debugger
-                    dispatch(setAllMeasurements(characteristic.value))
-                    counter++
-                }) 
-            manager.monitorCharacteristicForDevice( deviceId, serviceUUID, characteristicUUID2,
-                (error, characteristic: any) => {})     
-                await manager.writeCharacteristicWithResponseForDevice(deviceId, serviceUUID, characteristicUUID2, 'AQE=')    
-            }
-
         let characteristics = await getCharacteristics(services, device.id) 
         dispatch(setAllServices(characteristics))
-        await getAllCharachteristicsData(device.id, "00001808-0000-1000-8000-00805f9b34fb", "00002a18-0000-1000-8000-00805f9b34fb", "00002a52-0000-1000-8000-00805f9b34fb")
+        // getAllCharachteristicsData(device.id, "00001808-0000-1000-8000-00805f9b34fb", "00002a18-0000-1000-8000-00805f9b34fb", "00002a52-0000-1000-8000-00805f9b34fb")
         //debugger
         //await getCharachteristicsData(device.id, "00001808-0000-1000-8000-00805f9b34fb", "00002a18-0000-1000-8000-00805f9b34fb", "00002a52-0000-1000-8000-00805f9b34fb")
         //debugger
-        while(true){
-                await getCharachteristicsData(device.id, "00001808-0000-1000-8000-00805f9b34fb", "00002a18-0000-1000-8000-00805f9b34fb", "00002a52-0000-1000-8000-00805f9b34fb")
-                await delay(5000)
-        }
+        // while(true){
+        //         await getCharachteristicsData(device.id, "00001808-0000-1000-8000-00805f9b34fb", "00002a18-0000-1000-8000-00805f9b34fb", "00002a52-0000-1000-8000-00805f9b34fb", dispatch)
+        //         await delay(5000)
+        // }
     } catch(error){
         dispatch(setError(error + ''))
+        await manager.cancelDeviceConnection(device.id)
+        dispatch(setConnectedToViridis(false))
+        dispatch(setOnConnection(false))
     } finally {
         //dispatch(setConnectedToViridis(false))
-        manager.cancelDeviceConnection(device.id)
+        dispatch(setOnConnection(false))
+        // await manager.cancelDeviceConnection(device.id)
     }
 }
 
@@ -159,10 +150,40 @@ export const connectAndGetServicesAndCharacteristics = (device: any, isConnected
 //     }
 // }
 
+export const getAllCharachteristicsData = (deviceId: string, serviceUUID: string, mainCharacteristicUUID: string, characteristicUUID2: string) => async (dispatch: redux.Dispatch) => {
+    //dispatch(setIsOnGetAllMeasurements(true))
+    manager.monitorCharacteristicForDevice(deviceId,serviceUUID,mainCharacteristicUUID,
+        (error, characteristic: any) => {
+            if (error) {
+                console.log(error)
+            }
+            debugger
+            dispatch(setAllMeasurements(characteristic.value))
+            counter++
+        }) 
+    manager.monitorCharacteristicForDevice( deviceId, serviceUUID, characteristicUUID2,
+        (error, characteristic: any) => {})     
+        await manager.writeCharacteristicWithResponseForDevice(deviceId, serviceUUID, characteristicUUID2, 'AQE=')    
+}
 
+const getCharachteristicsData = async (deviceId: string, serviceUUID: string, mainCharacteristicUUID: string, characteristicUUID2: string, dispatch: redux.Dispatch) => {
+    manager.monitorCharacteristicForDevice(deviceId,serviceUUID,mainCharacteristicUUID,
+        (error, characteristic: any) => {
+            if(counter > 31){   
+            dispatch(setMeasurements(characteristic.value))
+            dispatch(saveMeasurements(characteristic.value))
+            }
+        
+            //dispatch(setLog('Listening'))
+            //debugger
+        }) 
+    manager.monitorCharacteristicForDevice( deviceId, serviceUUID, characteristicUUID2,
+    (error, characteristic: any) => {})     
+    await manager.writeCharacteristicWithResponseForDevice(deviceId, serviceUUID, characteristicUUID2, 'AQY=')
+    
+}
 
-
-let getCharacteristics = async (array: any, deviceId: string) => {
+const getCharacteristics = async (array: any, deviceId: string) => {
     let characteristicsAndServices = []
     for (let service of array) {
         delete service._manager
@@ -171,14 +192,13 @@ let getCharacteristics = async (array: any, deviceId: string) => {
     }
     //dispatch(setAllServices(characteristicsAndServices))
     return characteristicsAndServices
-  }
+}
 
-
-    let delay = (ms: number) => {
-        return new Promise(resolve => setTimeout(() => {
-            resolve();
-          }, ms
-        ));
-      };
+let delay = (ms: number) => {
+    return new Promise((resolve: Function) => setTimeout(() => {
+        resolve()
+        }, ms
+    ))
+}
 
 export default appReducer

@@ -31,6 +31,8 @@ export type DeviceReducerState = {
 }
 
 export type AppReducerState = {
+    isOnGetAllMeasurements: boolean
+    onConnection: boolean
     log: [],
     isScanning: boolean,
     connectedToViridis: boolean,
