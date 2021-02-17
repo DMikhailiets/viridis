@@ -66,16 +66,17 @@ let deviceReducer = (state: AppState = initialState, action: any) => {
         }
         case('SET_MEASUREMENTS'): {
             let measurement = decodeDataFromBinary(action.measurement)
+            debugger
             if(state.currentValue.length === 0 || (state.currentValue[state.currentValue.length -1] && state.currentValue[state.currentValue.length -1].value !== measurement.glucose)){
-                if ( parseFloat(measurement.glucose) > 7 && push < 1) {
-                     push = push + 1
-                    return {
-                        ...state, notifications: {
-                            ...state.notifications,
-                            criticalValue: true
-                        }
-                    }
-                }
+                // if ( parseFloat(measurement.glucose) > 7 && push < 1) {
+                //      push = push + 1
+                //     return {
+                //         ...state, notifications: {
+                //             ...state.notifications,
+                //             criticalValue: true
+                //         }
+                //     }
+                // }
                 return {
                     ...state, currentValue: [...state.currentValue, measurement]
                 }                

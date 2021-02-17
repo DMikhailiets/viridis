@@ -1,10 +1,10 @@
 import React, { useEffect } from 'react'
 import { connect } from 'react-redux'
-import { connectToDevice, getAllCharachteristicsData, scanDevices } from '../../../redux/reducers/appReducer'
+import { connectToDevice, getAllCharachteristicsData, scanDevices, getLastMeasurement } from '../../../redux/reducers/appReducer'
 import { fetchAppData, fetchAverage, fetchDeviceData, fetchMeasurements, fetchScannedDevicesList } from '../../../redux/selectors'
 import { AppState } from '../../../redux/store'
 import MainScreenComponent from '../component/mainScreen'
-import { statuses } from '../../../core/enums'
+import { statusList } from '../../../core/enums'
 
 let MainScreenContainer: React.FC<any> = (
     { 
@@ -15,23 +15,30 @@ let MainScreenContainer: React.FC<any> = (
         scanDevices,
         getAllCharachteristicsData,
         connectToDevice,
-        average
+        average,
+        getLastMeasurement
     }) => {
     
     useEffect(() => {
-        if(appData.appStatus === statuses.opened) {
-            scanDevices()
+        switch (appData.appStatus) {
+            case statusList.opened: {
+                scanDevices()
+                break
+            }
+            case statusList.deviceIsFound: {
+                connectToDevice(deviceData, appData.appStatus)
+                break
+            }
+            case statusList.deviceIsConnected: {
+                getAllCharachteristicsData(deviceData.id, "00001808-0000-1000-8000-00805f9b34fb", "00002a18-0000-1000-8000-00805f9b34fb", "00002a52-0000-1000-8000-00805f9b34fb")
+                break
+            }
+            case statusList.allMeasurementsWasReceived: {
+                getLastMeasurement(deviceData.id, "00001808-0000-1000-8000-00805f9b34fb", "00002a18-0000-1000-8000-00805f9b34fb", "00002a52-0000-1000-8000-00805f9b34fb", appData.appStatus)
+                break
+            } 
+            default: break 
         }
-        debugger
-        if(appData.appStatus === statuses.deviceIsFound){
-            debugger
-            connectToDevice(deviceData, appData.appStatus)
-        }
-        if(deviceData && deviceData.id && appData.connectedToViridis === true && !appData.isOnGetAllMeasurements){
-            debugger
-            getAllCharachteristicsData(deviceData.id, "00001808-0000-1000-8000-00805f9b34fb", "00002a18-0000-1000-8000-00805f9b34fb", "00002a52-0000-1000-8000-00805f9b34fb")
-        }
-        
       },[deviceData, appData.appStatus])
     
     return <MainScreenComponent
@@ -53,7 +60,8 @@ export default connect(
     }), {
         scanDevices,
         connectToDevice,
-        getAllCharachteristicsData
+        getAllCharachteristicsData,
+        getLastMeasurement
     }
     )
 (MainScreenContainer)

@@ -4,7 +4,7 @@ import { Text } from '../../../../components/Themed'
 import { Cart } from '../../../components'
 import { MainScreenComponentPropsType } from '../../../core/types'
 import styles from './mainScreenStyle'
-import { statuses } from '../../../core/enums'
+import { statusList } from '../../../core/enums'
 
 let MainScreenComponent: React.FC<MainScreenComponentPropsType> = (
   {
@@ -38,14 +38,14 @@ let Info = (props: any) => {
     <View style={styles.infoView}>
       
         {
-          props.appData.appStatus === statuses.isScanning
+          props.appData.appStatus === statusList.isScanning
           ? <Searching/>
           : <Text></Text>
         } 
 
       
         {
-          props.appData.appStatus === statuses.deviceIsConnected  
+          props.appData.appStatus === statusList.deviceIsConnected  
           ? <Connected/>
           : <Text></Text>
         } 

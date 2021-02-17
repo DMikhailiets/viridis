@@ -4,13 +4,14 @@ import redux from 'redux'
 import { AppReducerState } from "../../core/types"
 import { BleError, BleManager, Device, Service } from 'react-native-ble-plx'
 import { saveMeasurements, setAllMeasurements, setAllServices, setDeviceData, setFoundDevice, setMeasurements } from "./deviceReducer"
-import { statuses } from '../../core/enums'
+import { statusList } from '../../core/enums'
+import { decodeDataFromBinary } from '../../utils'
 
 let counter = 0
 
 let initialState: AppReducerState = {
     log: [],
-    appStatus: statuses.opened
+    appStatus: statusList.opened
 }
   
 let appReducer = (state: AppState = initialState, action: any) => {
@@ -51,7 +52,7 @@ export const setError = ((errorMessage: string) => ({type: 'SET_ERROR_MESSAGE', 
 const manager = new BleManager()
 
 export const scanDevices = () => async (dispatch: redux.Dispatch) => {
-    dispatch(setStatus(statuses.isScanning))
+    dispatch(setStatus(statusList.isScanning))
     manager.startDeviceScan(null, null, (error: BleError | null, device: Device | null) => {
         dispatch(setLog('Scanning...'))
         if(device != null) dispatch(setFoundDevice(device))
@@ -62,18 +63,16 @@ export const scanDevices = () => async (dispatch: redux.Dispatch) => {
             dispatch(setLog("Viridis Libre device was found"))
             dispatch(setDeviceData(device))
             manager.stopDeviceScan()
-            dispatch(setStatus(statuses.deviceIsFound))
+            dispatch(setStatus(statusList.deviceIsFound))
         }
     });
 }
 
 export const connectToDevice = (device: any, deviceStatus: number) => async (dispatch: redux.Dispatch) => {
-    debugger
     try {
-        if (deviceStatus === statuses.deviceIsFound ){
-            dispatch(setStatus(statuses.isConnecting))
+        if (deviceStatus === statusList.deviceIsFound ){
+            dispatch(setStatus(statusList.isConnecting))
             await manager.connectToDevice(device.id)
-            dispatch(setStatus(statuses.deviceIsConnected))
         }
         dispatch(setLog("Viridis Libre device was connected"))
         await manager.discoverAllServicesAndCharacteristicsForDevice(device.id)
@@ -82,6 +81,7 @@ export const connectToDevice = (device: any, deviceStatus: number) => async (dis
         
         let characteristics = await getCharacteristics(services, device.id) 
         dispatch(setAllServices(characteristics))
+        dispatch(setStatus(statusList.deviceIsConnected))
         // getAllCharachteristicsData(device.id, "00001808-0000-1000-8000-00805f9b34fb", "00002a18-0000-1000-8000-00805f9b34fb", "00002a52-0000-1000-8000-00805f9b34fb")
         //debugger
         //await getCharachteristicsData(device.id, "00001808-0000-1000-8000-00805f9b34fb", "00002a18-0000-1000-8000-00805f9b34fb", "00002a52-0000-1000-8000-00805f9b34fb")
@@ -92,18 +92,19 @@ export const connectToDevice = (device: any, deviceStatus: number) => async (dis
         // }
     } catch(error){
         dispatch(setError(error + ''))
+        console.log(error + '404')
         await manager.cancelDeviceConnection(device.id)
-        dispatch(setStatus(statuses.connectionError))
+        dispatch(setStatus(statusList.connectionError))
     } finally {
-        //dispatch(setConnectedToViridis(false))
-        dispatch(setStatus(statuses.inFinaly))
+        // dispatch(setConnectedToViridis(false))
+        // dispatch(setStatus(statusList.inFinaly))
         // await manager.cancelDeviceConnection(device.id)
     }
 }
 
 export const disconnectDevice = (device: any, deviceStatus: number) => async (dispatch: redux.Dispatch) => {
     await manager.cancelDeviceConnection(device.id)
-    dispatch(setStatus(statuses.deviceIsDisconnected))
+    dispatch(setStatus(statusList.deviceIsDisconnected))
 }
 // export const connectAndGetGlucoseValue = (device: any) => async (dispatch: redux.Dispatch) => {
 //     debugger
@@ -130,36 +131,51 @@ export const disconnectDevice = (device: any, deviceStatus: number) => async (di
 // }
 
 export const getAllCharachteristicsData = (deviceId: string, serviceUUID: string, mainCharacteristicUUID: string, characteristicUUID2: string) => async (dispatch: redux.Dispatch) => {
-    dispatch(setStatus(statuses.isOnGetAllMeasurements))
-    manager.monitorCharacteristicForDevice(deviceId,serviceUUID,mainCharacteristicUUID,
+    try {
+    dispatch(setStatus(statusList.isOnGetAllMeasurements))
+    const subscription = manager.monitorCharacteristicForDevice(deviceId,serviceUUID,mainCharacteristicUUID,
         (error, characteristic: any) => {
             if (error) {
                 console.log(error)
             }
-            debugger
+            let response = decodeDataFromBinary(characteristic.value)
+            if (response.BaseTime === '0:0:0') {
+                dispatch(setAllMeasurements(characteristic.value))
+                dispatch(setStatus(statusList.allMeasurementsWasReceived))
+                return subscription.remove()
+            }
             dispatch(setAllMeasurements(characteristic.value))
-            counter++
         }) 
     manager.monitorCharacteristicForDevice( deviceId, serviceUUID, characteristicUUID2,
-        (error, characteristic: any) => {})     
-        await manager.writeCharacteristicWithResponseForDevice(deviceId, serviceUUID, characteristicUUID2, 'AQE=')    
+        (error, characteristic: any) => {}) 
+        await manager.writeCharacteristicWithResponseForDevice(deviceId, serviceUUID, characteristicUUID2, 'AQE=')  
+    } catch (error) {
+        dispatch(setError(error + '401'))
+    }
 }
 
-const getCharachteristicsData = async (deviceId: string, serviceUUID: string, mainCharacteristicUUID: string, characteristicUUID2: string, dispatch: redux.Dispatch) => {
-    manager.monitorCharacteristicForDevice(deviceId,serviceUUID,mainCharacteristicUUID,
-        (error, characteristic: any) => {
-            if(counter > 31){   
-            dispatch(setMeasurements(characteristic.value))
-            dispatch(saveMeasurements(characteristic.value))
-            }
-        
-            //dispatch(setLog('Listening'))
-            //debugger
-        }) 
-    manager.monitorCharacteristicForDevice( deviceId, serviceUUID, characteristicUUID2,
-    (error, characteristic: any) => {})     
-    await manager.writeCharacteristicWithResponseForDevice(deviceId, serviceUUID, characteristicUUID2, 'AQY=')
-    
+export const getLastMeasurement = (deviceId: string, serviceUUID: string, mainCharacteristicUUID: string, characteristicUUID2: string, appStatus: number) => async (dispatch: redux.Dispatch) => {
+    try {
+        manager.monitorCharacteristicForDevice(deviceId,serviceUUID,mainCharacteristicUUID,
+            (error, characteristic: any) => {
+                // debugger
+                if (error) {
+                    console.log(error)
+                }
+                dispatch(setMeasurements(characteristic.value))
+                // dispatch(saveMeasurements(characteristic.value))
+                //dispatch(setLog('Listening'))
+                //debugger
+            }) 
+        manager.monitorCharacteristicForDevice( deviceId, serviceUUID, characteristicUUID2,
+        (error, characteristic: any) => {})     
+        while (appStatus === statusList.allMeasurementsWasReceived) {
+            await manager.writeCharacteristicWithResponseForDevice(deviceId, serviceUUID, characteristicUUID2, 'AQY=')
+            await delay(5000)
+        }
+    } catch (error) {
+        dispatch(setError(error + ' 402'))
+    }
 }
 
 const getCharacteristics = async (array: any, deviceId: string) => {
