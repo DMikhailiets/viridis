@@ -2,15 +2,12 @@ import { AppState } from "../store"
 import redux from 'redux'
 import { Device } from "react-native-ble-plx"
 import { DeviceReducerState} from "../../core/types"
-import { storeDataInLocalStorage, getDataFromLocalStorage, resetLocalStorageData } from '../../localStorage'
 import { decodeDataFromBinary } from "../../utils"
-
-let push = 0
 
 let initialState: DeviceReducerState = {
     device: null,
     scannedDevicesList: [],
-    currentValue: [],
+    currentValue: null,
     notifications: {
         criticalValue: false,
         disconnected: false
@@ -48,12 +45,18 @@ let deviceReducer = (state: AppState = initialState, action: any) => {
         }
         case('SET_CRITICAL_VALUE_NOTIFICATION_STATUS'): {
             return {
-                ...state, ...state.notifications.criticalValue = action.status
-            }
+                ...state, notifications: {
+                    ...state.notifications,
+                    criticalValue: true,
+                }
         }
         case('SET_DISCONNECTED_NOTIFICATION_STATUS'): {
+            debugger
             return {
-                ...state, ...state.notifications.criticalValue = action.status
+                ...state, notifications: {
+                    ...state.notifications,
+                    disconnected: action.status
+                }
             }
         }
         case('SET_ALL_MEASUREMENTS'): {
@@ -66,19 +69,21 @@ let deviceReducer = (state: AppState = initialState, action: any) => {
         }
         case('SET_MEASUREMENTS'): {
             let measurement = decodeDataFromBinary(action.measurement)
-            debugger
-            if(state.currentValue.length === 0 || (state.currentValue[state.currentValue.length -1] && state.currentValue[state.currentValue.length -1].value !== measurement.glucose)){
-                // if ( parseFloat(measurement.glucose) > 7 && push < 1) {
-                //      push = push + 1
-                //     return {
-                //         ...state, notifications: {
-                //             ...state.notifications,
-                //             criticalValue: true
-                //         }
-                //     }
-                // }
+            //debugger
+            if(state.allMeasurements[state.allMeasurements.length -1].SequenceNumber !== measurement.SequenceNumber){
+                //debugger
+                if ( parseFloat(measurement.glucose) > 7) {
+                    return {
+                        ...state, notifications: {
+                            ...state.notifications,
+                            criticalValue: true,
+                            
+                        },
+                        allMeasurements: [...state.allMeasurements, measurement]
+                    }
+                }
                 return {
-                    ...state, currentValue: [...state.currentValue, measurement]
+                    ...state, allMeasurements: [...state.allMeasurements, measurement]
                 }                
             } else return state
         }   
@@ -86,9 +91,15 @@ let deviceReducer = (state: AppState = initialState, action: any) => {
             return {
                 ...state, currentValue: [], allMeasurements: []
             }
+        }
+        case 'SET_LOCALSTORAGE_DATA': {
+            return {
+                ...state,
+                allMeasurements: [...action.data]
+            }
         }     
         default:{
-            return state
+            return state 
         }
             
     }
@@ -101,6 +112,7 @@ export const setFoundDevice = ((device: Device) => ({type: 'SET_FOUND_DEVICE', d
 export const setAllServices = ((allServices: any) => ({type: 'SET_ALL_SERVICES_AND_CHARACTERISTICS', allServices}))
 export const setMeasurements = ((measurement: any) => ({type: 'SET_MEASUREMENTS', measurement}))
 export const resetReduxtData = (() => ({type: 'RESET_REDUX_DATA'}))
+export const setLocalstorageData = ((data: Array<Object>) => ({type: 'SET_LOCALSTORAGE_DATA', data}))
 
 export const saveMeasurements = (data: any) => async (dispatch: redux.Dispatch) => {
     let measurement = decodeDataFromBinary(data)

@@ -1,13 +1,13 @@
-import {useState} from 'react'
-import { AppState } from "../store"
 import redux from 'redux'
+import { AppState } from "../store"
 import { AppReducerState } from "../../core/types"
-import { BleError, BleManager, Device, Service } from 'react-native-ble-plx'
-import { saveMeasurements, setAllMeasurements, setAllServices, setDeviceData, setFoundDevice, setMeasurements } from "./deviceReducer"
+import { BleError, BleManager, Device } from 'react-native-ble-plx'
+import { resetReduxtData, setAllMeasurements, setAllServices, setDeviceData, setDisconnectedNotificationStatus, setFoundDevice, setLocalstorageData, setMeasurements } from "./deviceReducer"
 import { statusList } from '../../core/enums'
-import { decodeDataFromBinary } from '../../utils'
+import { decodeDataFromBinary, delay } from '../../utils'
+import storageApi from '../../localStorage'
 
-let counter = 0
+const manager = new BleManager()
 
 let initialState: AppReducerState = {
     log: [],
@@ -49,15 +49,14 @@ export const setStatus = ((status: number)=>({type: 'SET_STATUS', status}))
 export const setLog = ((logMessage: string) => ({type: 'SET_LOG_MESSAGE', logMessage}))
 export const setError = ((errorMessage: string) => ({type: 'SET_ERROR_MESSAGE', errorMessage}))
 
-const manager = new BleManager()
-
 export const scanDevices = () => async (dispatch: redux.Dispatch) => {
     dispatch(setStatus(statusList.isScanning))
     manager.startDeviceScan(null, null, (error: BleError | null, device: Device | null) => {
         dispatch(setLog('Scanning...'))
         if(device != null) dispatch(setFoundDevice(device))
         if (error) {
-            dispatch(setError(error + ''))
+            dispatch(setError(error + '010'))
+            dispatch(setStatus(statusList.geolocationError))
         }
         if (device && device.name?.toLowerCase().includes('viridis')){
             dispatch(setLog("Viridis Libre device was found"))
@@ -65,12 +64,12 @@ export const scanDevices = () => async (dispatch: redux.Dispatch) => {
             manager.stopDeviceScan()
             dispatch(setStatus(statusList.deviceIsFound))
         }
-    });
+    })
 }
 
 export const connectToDevice = (device: any, deviceStatus: number) => async (dispatch: redux.Dispatch) => {
     try {
-        if (deviceStatus === statusList.deviceIsFound ){
+        if (deviceStatus === statusList.deviceIsFound ) {
             dispatch(setStatus(statusList.isConnecting))
             await manager.connectToDevice(device.id)
         }
@@ -78,70 +77,39 @@ export const connectToDevice = (device: any, deviceStatus: number) => async (dis
         await manager.discoverAllServicesAndCharacteristicsForDevice(device.id)
         dispatch(setLog('Permission for charachteristics was received'))
         let services = await manager.servicesForDevice(device.id)
-        
         let characteristics = await getCharacteristics(services, device.id) 
         dispatch(setAllServices(characteristics))
         dispatch(setStatus(statusList.deviceIsConnected))
-        // getAllCharachteristicsData(device.id, "00001808-0000-1000-8000-00805f9b34fb", "00002a18-0000-1000-8000-00805f9b34fb", "00002a52-0000-1000-8000-00805f9b34fb")
-        //debugger
-        //await getCharachteristicsData(device.id, "00001808-0000-1000-8000-00805f9b34fb", "00002a18-0000-1000-8000-00805f9b34fb", "00002a52-0000-1000-8000-00805f9b34fb")
-        //debugger
-        // while(true){
-        //         await getCharachteristicsData(device.id, "00001808-0000-1000-8000-00805f9b34fb", "00002a18-0000-1000-8000-00805f9b34fb", "00002a52-0000-1000-8000-00805f9b34fb", dispatch)
-        //         await delay(5000)
-        // }
     } catch(error){
         dispatch(setError(error + ''))
         console.log(error + '404')
         await manager.cancelDeviceConnection(device.id)
         dispatch(setStatus(statusList.connectionError))
-    } finally {
-        // dispatch(setConnectedToViridis(false))
-        // dispatch(setStatus(statusList.inFinaly))
-        // await manager.cancelDeviceConnection(device.id)
-    }
+    } 
 }
 
 export const disconnectDevice = (device: any, deviceStatus: number) => async (dispatch: redux.Dispatch) => {
     await manager.cancelDeviceConnection(device.id)
     dispatch(setStatus(statusList.deviceIsDisconnected))
 }
-// export const connectAndGetGlucoseValue = (device: any) => async (dispatch: redux.Dispatch) => {
-//     debugger
-//     dispatch(setConnectedToViridis(true))
-//     try {
-//         debugger
-//         //await manager.connectToDevice(device.id)
-//         dispatch(setLog("Viridis Libre A device was connected!)"))
-//         const getCharachteristicsData = async (deviceId: string, serviceUUID: string, mainCharacteristicUUID: string, characteristicUUID2: string) => {
-//         manager.monitorCharacteristicForDevice(deviceId,serviceUUID,mainCharacteristicUUID,
-//             (error, characteristic: any) => {
-//                 dispatch(setMeasurements(characteristic.value))
-//             }) 
-//             let data = await manager.writeCharacteristicWithResponseForDevice(deviceId, serviceUUID, characteristicUUID2, binaryArrayToBase64())
-//             debugger
-//         }
-//             await getCharachteristicsData(device.id, "00001808-0000-1000-8000-00805f9b34fb", "00002a18-0000-1000-8000-00805f9b34fb", "00002a52-0000-1000-8000-00805f9b34fb")
-//     } catch(error){
-//         dispatch(setError(error + ''))
-//     } finally {
-//         //manager.cancelDeviceConnection(device.id)
-//         //dispatch(setConnectedToViridis(false))
-//     }
-// }
 
 export const getAllCharachteristicsData = (deviceId: string, serviceUUID: string, mainCharacteristicUUID: string, characteristicUUID2: string) => async (dispatch: redux.Dispatch) => {
     try {
     dispatch(setStatus(statusList.isOnGetAllMeasurements))
+    await storageApi.resetLocalStorageData()
+    dispatch(resetReduxtData())
+    let previousData: any = []
     const subscription = manager.monitorCharacteristicForDevice(deviceId,serviceUUID,mainCharacteristicUUID,
         (error, characteristic: any) => {
             if (error) {
                 console.log(error)
             }
             let response = decodeDataFromBinary(characteristic.value)
+            previousData.push(response)
             if (response.BaseTime === '0:0:0') {
                 dispatch(setAllMeasurements(characteristic.value))
                 dispatch(setStatus(statusList.allMeasurementsWasReceived))
+                storageApi.storeArrayDataInLocalStorage(previousData)
                 return subscription.remove()
             }
             dispatch(setAllMeasurements(characteristic.value))
@@ -155,24 +123,28 @@ export const getAllCharachteristicsData = (deviceId: string, serviceUUID: string
 }
 
 export const getLastMeasurement = (deviceId: string, serviceUUID: string, mainCharacteristicUUID: string, characteristicUUID2: string, appStatus: number) => async (dispatch: redux.Dispatch) => {
+    dispatch(setStatus(statusList.inLastDataFetching))
     try {
-        manager.monitorCharacteristicForDevice(deviceId,serviceUUID,mainCharacteristicUUID,
-            (error, characteristic: any) => {
-                // debugger
+        const connection1 = manager.monitorCharacteristicForDevice(deviceId,serviceUUID,mainCharacteristicUUID,
+            async (error, characteristic: any) => {
                 if (error) {
-                    console.log(error)
+                    connection1.remove()
+                    connection2.remove()
+                    console.log(error + ' 403')
+                    dispatch(setStatus(statusList.connectionError))
+                    debugger
+                    dispatch(setDisconnectedNotificationStatus(true))
                 }
+                let response = decodeDataFromBinary(characteristic.value)
+                storageApi.storeDataInLocalStorage(response)
                 dispatch(setMeasurements(characteristic.value))
-                // dispatch(saveMeasurements(characteristic.value))
-                //dispatch(setLog('Listening'))
-                //debugger
             }) 
-        manager.monitorCharacteristicForDevice( deviceId, serviceUUID, characteristicUUID2,
+        const connection2 = manager.monitorCharacteristicForDevice( deviceId, serviceUUID, characteristicUUID2,
         (error, characteristic: any) => {})     
         while (appStatus === statusList.allMeasurementsWasReceived) {
-            await manager.writeCharacteristicWithResponseForDevice(deviceId, serviceUUID, characteristicUUID2, 'AQY=')
-            await delay(5000)
-        }
+                await manager.writeCharacteristicWithResponseForDevice(deviceId, serviceUUID, characteristicUUID2, 'AQY=')
+                await delay(10000)
+            }
     } catch (error) {
         dispatch(setError(error + ' 402'))
     }
@@ -185,15 +157,72 @@ const getCharacteristics = async (array: any, deviceId: string) => {
         let characteristics = await manager.characteristicsForDevice(deviceId, service.uuid)
         characteristicsAndServices.push({...service, characteristics: characteristics})
     }
-    //dispatch(setAllServices(characteristicsAndServices))
     return characteristicsAndServices
 }
 
-let delay = (ms: number) => {
-    return new Promise((resolve: Function) => setTimeout(() => {
-        resolve()
-        }, ms
-    ))
+export const errorHandler = (deviceId: any) => async (dispatch: redux.Dispatch) => {
+    if (!await manager.isDeviceConnected(deviceId)) {
+        dispatch(setStatus(statusList.deviceIsFound))
+    } 
+}
+
+export const connectionErrorHandler = () => async (dispatch: redux.Dispatch) => {
+    
+}
+
+export const getLocalstorageData = () => async (dispatch: redux.Dispatch) => {
+    const storageData = await storageApi.getDataFromLocalStorage()
+    console.log(storageData)
+    dispatch(setLocalstorageData(storageData))
+    return
+}
+
+export const checkBluetoothStatus = () => async (dispatch: redux.Dispatch) => {
+    const status = await manager.state()
+    console.log(status)
+    switch (status) {
+        case 'Unknown': { 
+            dispatch(setStatus(statusList.bluetoothError))
+            dispatch(setLog('Error: The current state of the manager is unknown; an update is imminent'))
+            break
+    }
+        case 'Resetting': { 
+            dispatch(setStatus(statusList.bluetoothError))
+            dispatch(setLog('Error: The connection with the system service was momentarily lost.'))
+            break
+    }
+        case 'Unsupported': { 
+            dispatch(setStatus(statusList.bluetoothError))
+            dispatch(setLog('Error: The platform does not support Bluetooth low energy.'))
+            break
+    }
+        case 'Unauthorized': { 
+            dispatch(setStatus(statusList.bluetoothError))
+            dispatch(setLog('Error: The app is not authorized to use Bluetooth low energy.'))
+            break
+    }
+        case 'PoweredOff': { 
+            dispatch(setStatus(statusList.bluetoothError))
+            dispatch(setLog('Error:  Bluetooth is currently powered off.'))
+            break
+    }
+        case 'PoweredOn': { 
+            dispatch(setLog('Bluetooth is currently powered on and available to use!'))
+            dispatch(setStatus(statusList.bluetoothIsEnabled))
+            break
+    }
+        default: dispatch(setLog("Critical error: Can't get bluetooth status!"))
+    }
+}
+
+export const waitBluetoothEnable = () => async (dispatch: redux.Dispatch) => {
+    let status = await manager.state()
+    while (status !== 'PoweredOn') {
+        status = await manager.state()
+        if (status == 'PoweredOn') {
+            dispatch(setStatus(statusList.bluetoothIsEnabled))
+        }
+    }
 }
 
 export default appReducer

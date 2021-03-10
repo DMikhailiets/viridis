@@ -1,3 +1,4 @@
+import { Ionicons } from '@expo/vector-icons';
 import React from 'react'
 import { StyleSheet } from 'react-native';
 import { divide } from 'react-native-reanimated'
@@ -7,8 +8,15 @@ let Cart = (props: any) => {
   return(
         <View style={styles.cart}>
             <View style={styles.subCart}>
+              <View style={styles.arrowWrapper}>
+              {
+                props.currentValue[1].glucose > props.currentValue[0].glucose
+                ? <Ionicons style={styles.arrow} name="ios-arrow-dropup"></Ionicons>
+                : <Ionicons style={styles.arrow} name="ios-arrow-dropdown"></Ionicons>
+              }
               
-    <Text style={styles.title}>{`${props.currentValue.glucose}`}</Text>
+    <Text style={styles.title}>{`${props.currentValue[1].glucose}`}</Text>
+              </View>
               <Text style={styles.text}>current value</Text>
             </View>
             <View style={styles.subCart1}>
@@ -77,5 +85,16 @@ const styles = StyleSheet.create({
       color: '#fff',
       fontSize: 25,
       fontWeight: '100',
+    },
+    arrow: {
+      fontSize: 50,
+      color: '#38C0F3',
+      paddingRight: 20
+    },
+    arrowWrapper: {
+      flex: 1,
+      flexDirection: 'row',
+      justifyContent: 'center',
+      alignItems: 'center'
     }
   });

@@ -27,9 +27,10 @@ class Notification extends Component<NotificationComponentPropsType> {
       this.onRegister.bind(this),
       this.onNotif.bind(this),
     );
-    
   }
-  CreateNotif(params: any, type: string){
+  CreateNotif(params: any, type: string, props: any){
+    console.log(props)
+    debugger
     this.notif.localNotif(params);
     switch(type){
       case('CRITICALVALUE'): {
@@ -43,8 +44,8 @@ class Notification extends Component<NotificationComponentPropsType> {
   }
   render() {
     return (
-      <>{this.props.criticalValue ? this.CreateNotif({title: 'Внимание', message: 'Уровень сахара в крови достиг критических значений!'},'CRITICALVALUE') :<></>}
-        {this.props.disconnected ? this.CreateNotif({title: 'Внимание', message: 'Потерено соединение с устройством!'}, 'DISCONNECTED') :<></>}
+      <>{this.props.criticalValue ? this.CreateNotif({title: 'Внимание', message: 'Уровень сахара в крови достиг критических значений!'},'CRITICALVALUE', this.props) :<></>}
+        {this.props.disconnected ? this.CreateNotif({title: 'Внимание', message: 'Потерено соединение с устройством!'}, 'DISCONNECTED', this.props) :<></>}
       </>
       // <View style={styles.container}>
       //   <Text style={styles.title}>

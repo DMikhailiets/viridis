@@ -1,28 +1,74 @@
 import React from 'react'
-import { View, Image } from 'react-native'
+import { View, Image, ActivityIndicator } from 'react-native'
 import { Text } from '../../../../components/Themed'
-import { Cart } from '../../../components'
+import { Cart, BluetoothDisabledModal, LocationDisabledModal } from '../../../components'
 import { MainScreenComponentPropsType } from '../../../core/types'
 import styles from './mainScreenStyle'
 import { statusList } from '../../../core/enums'
+import { Ionicons } from '@expo/vector-icons'
 
-let MainScreenComponent: React.FC<MainScreenComponentPropsType> = (
+let MainScreenComponent: React.FC<any> = (
   {
     deviceData, 
     appData,
     scannedDevicesList,
     measurements,
-    average
+    average,
+    currentValue
   }) => {
+    switch (appData.appStatus) {
+      case statusList.opened: {
+        return  <View style={styles.container}><Text>Приложение открыто</Text></View>
+      }
+      case statusList.bluetoothIsEnabled: {
+        return  <View style={styles.container}><Text>Блютуз включен</Text></View>
+      }
+      case statusList.deviceIsFound: {
+        return  <View style={styles.container}><Text>Устройство найдено</Text></View>
+      }
+      case statusList.deviceIsConnected: {
+        return  <View style={styles.container}><Text>Приложение соединено</Text></View>
+      }
+      case statusList.allMeasurementsWasReceived: {
+        return  <View style={styles.container}><Text>Получены предыдущие значения</Text></View>
+      } 
+      case statusList.connectionError: {
+        return  <View style={styles.container}><Text>Ошибка соединения</Text></View>
+      }
+      case statusList.bluetoothError: {
+        return  <View style={styles.container}><Text>bluetooth error</Text></View>
+      }
+      default: return <View style={styles.container}>
+        {
+          currentValue.length === 2 && appData.appStatus !== statusList.isOnGetAllMeasurements
+          ? <View style={styles.measurementsWrapper}>
+             <Cart currentValue={currentValue} average={average}/>          
+            </View>
+          : <ActivityIndicator size="large" color="#38C0F3" />
+        }
+        </View> 
+  }
     return (
       <View style={styles.container}>
-        {
-          measurements && measurements.length === 0
-          ? <Info appData={appData}/>
-          : <View style={styles.measurementsWrapper}>
-               <Cart currentValue={measurements.pop()} average={average}/>            
-            </View>
+        {/* {
+          appData.appStatus === statusList.bluetoothError
+          ? <BluetoothDisabledModal/>
+          : <></>
         }
+        {
+          appData.appStatus === statusList.geolocationError
+          ? <LocationDisabledModal/>
+          : <></>
+        }
+        {
+          <Searching appStatus={appData.appStatus}/>
+         // measurements && measurements.length === 0
+          //?
+           // <Info appData={appData}/>
+          // : <View style={styles.measurementsWrapper}>
+          //      <Cart currentValue={'hi'} average={average}/>            
+          //   </View>
+        } */}
       </View>
     )
 }
@@ -33,19 +79,26 @@ let MainScreenComponent: React.FC<MainScreenComponentPropsType> = (
 //             <Text> {`${appData.connectedToViridis}]}`}</Text>
 //           </View>
 
-let Info = (props: any) => {
+let Info = ({appData}: any) => {
   return (
     <View style={styles.infoView}>
       
         {
-          props.appData.appStatus === statusList.isScanning
+          appData.appStatus === statusList.isScanning
           ? <Searching/>
           : <Text></Text>
         } 
-
+        {
+          appData.appStatus === statusList.bluetoothError
+          ? <View >
+            <Ionicons style={styles.bluetoothLogo} name="ios-bluetooth"></Ionicons>
+            <Text>bluetoothError</Text>
+          </View>
+          : <></>
+        }
       
         {
-          props.appData.appStatus === statusList.deviceIsConnected  
+          appData.appStatus === statusList.deviceIsConnected  
           ? <Connected/>
           : <Text></Text>
         } 
@@ -54,13 +107,13 @@ let Info = (props: any) => {
   )
 }
 
-let Searching = () => {
+let Searching = ({appStatus}) => {
   return (
     <View style={styles.infoView}>
       <Image
         source={require('../../../img/Searching.png')}
       />
-      <Text style={styles.text}>Searching...</Text>
+      <Text style={styles.text}>{statusList[appStatus]}</Text>
     </View>
   )
 }

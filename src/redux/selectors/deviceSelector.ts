@@ -8,3 +8,4 @@ export const fetchMeasurements = createSelector((state: AppState) => state.devic
 export const fetchAllMeasurements = createSelector((state: AppState) => state.deviceReducer.allMeasurements, (allMeasurements: any) => allMeasurements)
 export const fetchAverage = createSelector((state: AppState) => state.deviceReducer.average, (average: any) => average)
 export const fetchNotificationsStatus = createSelector((state: AppState) => state.deviceReducer.notifications, (notifications: any) => notifications)
+export const fetchCurrentValue = createSelector((state: AppState) => state.deviceReducer.allMeasurements, (allMeasurements: any) => allMeasurements.slice(-2))
