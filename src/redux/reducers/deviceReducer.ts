@@ -49,6 +49,7 @@ let deviceReducer = (state: AppState = initialState, action: any) => {
                     ...state.notifications,
                     criticalValue: true,
                 }
+            }
         }
         case('SET_DISCONNECTED_NOTIFICATION_STATUS'): {
             debugger

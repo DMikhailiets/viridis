@@ -29,8 +29,6 @@ class Notification extends Component<NotificationComponentPropsType> {
     );
   }
   CreateNotif(params: any, type: string, props: any){
-    console.log(props)
-    debugger
     this.notif.localNotif(params);
     switch(type){
       case('CRITICALVALUE'): {

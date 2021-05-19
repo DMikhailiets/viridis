@@ -1,35 +1,31 @@
 import { StatusBar } from 'expo-status-bar';
 import React from 'react';
-//import PushNotificationIOS from "@react-native-community/push-notification-ios";
-import PushNotification from "react-native-push-notification"
 
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { Provider } from 'react-redux';
  
 import useCachedResources from './hooks/useCachedResources';
 import useColorScheme from './hooks/useColorScheme';
-import { StyleText } from './src/components';
 import Navigation from './src/navigation';
 
-import { registerRootComponent } from 'expo';
 
 import store from './src/redux/store';
-import { TouchableOpacity } from 'react-native-gesture-handler';
-import { Text } from 'react-native';
+
 import { Notification } from './src/modules';
 
+import * as Permissions from 'expo-permissions';
+import { Text, View } from './components/Themed';
+import { Button, Image } from 'react-native';
+import { SwitchLocation } from './src/components';
+
 export default function App() {
+  const [permission, askForPermission] = Permissions.usePermissions(Permissions.LOCATION, { ask: true });
   const isLoadingComplete = useCachedResources();
   const colorScheme = useColorScheme();
 
-// let testPush = () => {
-//   PushNotification.localNotification({
-//       title: 'Viridis',
-//       message: 'Bla bla'
-//   })
-//   //debugger
-// }
-
+  if (!permission || permission.status !== 'granted') {
+    return <SwitchLocation/>
+  }
 
   if (!isLoadingComplete) {
     return null;
