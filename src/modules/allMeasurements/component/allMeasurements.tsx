@@ -5,11 +5,12 @@ import { ScrollView } from 'react-native-gesture-handler'
 import { DebugComponentPropsType, MainScreenComponentPropsType } from '../../../core/types'
 import { generateId } from '../../../utils'
 import styles from './allMeasurementsStyles'
+import moment from 'moment'
 
 
 let AllMeasurementsComponent: React.FC<any> = (props) => {
 
-let logArray = props.allMeasurements.map((measurement: any) => <Cart key={measurement.id}value={measurement.value} date={measurement.date}>{measurement}</Cart>)
+let logArray = props.allMeasurements.map((measurement: any) => <Cart key={measurement.id}value={measurement.glucose} date={moment(measurement.date).format("hh:mm:ss DD.MM.YY")}>{measurement.glucose}</Cart>)
     return (
         <View style={styles.container}>
             <ScrollView>

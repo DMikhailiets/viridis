@@ -2,6 +2,7 @@ import React from 'react'
 import { View, Text } from 'react-native'
 import { ScrollView } from 'react-native-gesture-handler'
 import { XAxis, Grid, YAxis, LineChart } from 'react-native-svg-charts'
+import moment from 'moment'
 
 import { ChartComponentsPropsType, DebugComponentPropsType, MainScreenComponentPropsType } from '../../../core/types'
 import styles from './chartComponentStyles'
@@ -9,10 +10,10 @@ import styles from './chartComponentStyles'
 const contentInset = { top: 20, bottom: 20 }
 
 let ChartComponent: React.FC<ChartComponentsPropsType> = ({allMeasurements}) => {
-    const values = allMeasurements.map((measurement: any) => parseFloat(measurement.value))
-    const dates = allMeasurements.map((measurement: any) => measurement.date)
+    const values = allMeasurements.map((measurement: any) => parseFloat(measurement.glucose))
+    const dates = allMeasurements.map((measurement: any) => moment(measurement.date).format('DD.MM.YYYY'))
     const data = values//[0.50, 0.10, 0.40, 0.95, 0.4, 0.24, 0.85, 0.91, 0.35, 0.53, 0.53, 0.24, 0.50, 0.20, 0.80]
-   // debugger
+    // debugger
     return (
     <ScrollView horizontal={true}>
         <View style={styles.container} >
