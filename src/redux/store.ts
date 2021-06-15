@@ -1,9 +1,8 @@
 
 import { createStore, combineReducers, applyMiddleware } from 'redux'
-import thunk from 'redux-thunk'
-import { composeWithDevTools } from 'redux-devtools-extension';
-import thunkMiddleware from 'redux-thunk';
-import { deviceReducer, appReducer } from './reducers';
+import { composeWithDevTools } from 'redux-devtools-extension'
+import thunkMiddleware from 'redux-thunk'
+import { deviceReducer, appReducer } from './reducers'
 
 
 let rootReducer: any = combineReducers({
@@ -16,6 +15,6 @@ export type AppState = ReturnType<RootReducer>
 
 const store = createStore(rootReducer, composeWithDevTools(
     applyMiddleware(thunkMiddleware)
-  ));
+  ))
 
-export default store;
+export default store

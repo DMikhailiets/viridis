@@ -1,12 +1,12 @@
 import React from 'react'
-import { Button, Image } from 'react-native'
+import { Image } from 'react-native'
 import { Text, View } from '../../../components/Themed'
-import * as Permissions from 'expo-permissions';
+import * as Permissions from 'expo-permissions'
 import styles from './style'
-import { TouchableOpacity } from 'react-native-gesture-handler';
+import { TouchableOpacity } from 'react-native-gesture-handler'
 
 const SwitchLocation = () => {
-    const [permission, askForPermission] = Permissions.usePermissions(Permissions.LOCATION, { ask: true });
+    const [askForPermission] = Permissions.usePermissions(Permissions.LOCATION, { ask: true })
     return (
       <View style={styles.infoView}>
         <Image source={require('../../img/Searching.png')}/>
@@ -16,9 +16,9 @@ const SwitchLocation = () => {
             onPress={() => {
                 askForPermission
             }}
-      >
-        <Text style={styles.text}>Get permission</Text>
-      </TouchableOpacity>
+        >
+          <Text style={styles.text}>Get permission</Text>
+        </TouchableOpacity>
       </View>
     )
   }

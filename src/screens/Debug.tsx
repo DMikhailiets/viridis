@@ -1,20 +1,14 @@
-import React, {Component, useState, useEffect} from 'react';
-import { BleManager } from 'react-native-ble-plx';
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Platform, } from 'react-native';
-
-import EditScreenInfo from '../../components/EditScreenInfo';
-import { Text, View } from '../../components/Themed';
-import { MainScreen } from '../modules/mainScreen';
+import React from 'react'
+import { StyleSheet } from 'react-native'
+import { View } from '../../components/Themed'
 import { Debug } from '../modules'
-
 
 export default function DebugScreen() {
   return (
     <View style={styles.container}>
       <Debug/>
     </View>
-  );
+  )
 }
 
 const styles = StyleSheet.create({
@@ -43,4 +37,4 @@ const styles = StyleSheet.create({
     height: 1,
     width: '80%',
   },
-});
+})

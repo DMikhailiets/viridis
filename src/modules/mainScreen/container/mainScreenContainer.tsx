@@ -30,12 +30,9 @@ let MainScreenContainer: React.FC<any> = (
             case statusList.opened: {
                 getLocalstorageData()
                 checkBluetoothStatus()
-                // scanDevices()
                 break
             }
             case statusList.bluetoothIsEnabled: {
-                //getLocalstorageData()
-                // checkBluetoothStatus()
                 scanDevices()
                 break
             }
@@ -59,10 +56,6 @@ let MainScreenContainer: React.FC<any> = (
                 waitBluetoothEnable()
                 break
             }
-            // case statusList.geolocationError: {
-            //     connectionErrorHandler(appData.appStatus)
-            //     break
-            // }
             default: break 
         }
       },[deviceData, appData.appStatus])

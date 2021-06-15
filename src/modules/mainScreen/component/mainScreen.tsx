@@ -1,15 +1,12 @@
 import React from 'react'
-import { View, Image, ActivityIndicator } from 'react-native'
+import { View, ActivityIndicator } from 'react-native'
 import { Text } from '../../../../components/Themed'
 import { Cart, BluetoothDisabledModal, LocationDisabledModal } from '../../../components'
-import { MainScreenComponentPropsType } from '../../../core/types'
 import styles from './mainScreenStyle'
 import { statusList } from '../../../core/enums'
-import { Ionicons } from '@expo/vector-icons'
 
 let MainScreenComponent: React.FC<any> = (
   {
-    deviceData, 
     appData,
     isConnected,
     average,

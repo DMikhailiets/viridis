@@ -1,7 +1,7 @@
 import React from 'react'
 import { View, Text, Button } from 'react-native'
 import { ScrollView } from 'react-native-gesture-handler'
-import { DebugComponentPropsType, MainScreenComponentPropsType } from '../../../core/types'
+import { DebugComponentPropsType } from '../../../core/types'
 import styles from './debugStyles'
 
 

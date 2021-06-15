@@ -54,7 +54,6 @@ const styles = StyleSheet.create({
       borderRadius: 15,
       borderWidth: 1,
       borderColor: "#38C0F3",
-      //height: 100,
     },
     subCart: {
       height: 70,

@@ -166,12 +166,7 @@ const getCharacteristics = async (array: any, deviceId: string) => {
 export const errorHandler = (deviceId: any) => async (dispatch: redux.Dispatch) => {
     if (!await manager.isDeviceConnected(deviceId)) {
         dispatch(setStatus(statusList.deviceIsFound))
-        // dispatch(setIsConnected(true))
     } 
-}
-
-export const connectionErrorHandler = () => async (dispatch: redux.Dispatch) => {
-    
 }
 
 export const getLocalstorageData = () => async (dispatch: redux.Dispatch) => {

@@ -37,5 +37,4 @@ let decodeFromBinary = (base: string) => {
     }
 }
 
-//console.log(decodeSpec("B8dOAAAAAAAJAJd3PPAA"))
 export default decodeFromBinary

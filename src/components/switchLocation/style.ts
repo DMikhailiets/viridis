@@ -1,5 +1,4 @@
-import { View, StyleSheet, Image } from 'react-native'
-import { color } from 'react-native-reanimated';
+import { StyleSheet } from 'react-native'
 
 const styles = StyleSheet.create({
     infoView: {
@@ -30,6 +29,6 @@ const styles = StyleSheet.create({
         fontSize: 18,
         margin: 40
     }
-    });
+})
 
-    export default styles
+export default styles

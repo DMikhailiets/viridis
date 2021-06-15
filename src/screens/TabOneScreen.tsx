@@ -1,22 +1,15 @@
-import React, {Component, useState, useEffect} from 'react';
-import { BleManager } from 'react-native-ble-plx';
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Platform, } from 'react-native';
-
-import EditScreenInfo from '../../components/EditScreenInfo';
-import { Text, View } from '../../components/Themed';
-import { MainScreen } from '../modules/mainScreen';
-
+import React from 'react'
+import { StyleSheet } from 'react-native'
+import { View } from '../../components/Themed'
+import { MainScreen } from '../modules/mainScreen'
 
 export default function TabOneScreen() {
   return (
     <View style={styles.container}>
-      {/* 1<Text style={styles.title}>Viridis</Text> */}
       <MainScreen/>
       <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)" />
-      {/* <EditScreenInfo path="/screens/TabOneScreen.js" /> */}
     </View>
-  );
+  )
 }
 
 const styles = StyleSheet.create({
@@ -45,4 +38,4 @@ const styles = StyleSheet.create({
     height: 1,
     width: '80%',
   },
-});
+})
