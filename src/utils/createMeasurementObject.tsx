@@ -1,7 +1,6 @@
 import { base64ToBinaryArray, decodeDataFromBinary, getFullByte, getInAdditionalCode } from "."
 
 const createMeasurementObject = (action: any) => {
-    debugger
     let dateObj = new Date()
     let data = base64ToBinaryArray(action.measurement)
     let glucoseValueBytes = getFullByte(data[13].toString(2)) + getFullByte(data[12].toString(2))

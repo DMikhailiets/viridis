@@ -77,7 +77,7 @@ export default class NotifService {
       smallIcon: 'ic_notification', // (optional) default: "ic_notification" with fallback for "ic_launcher"
       //bigText: 'My big text that will be shown when notification is expanded', // (optional) default: "message" prop
       //subText: 'This is a subText', // (optional) default: none
-      color: '#38C0F3', // (optional) default: system default
+      color: '#00BFFF', // (optional) default: system default
       vibrate: true, // (optional) default: true
       vibration: 300, // vibration length in milliseconds, ignored if vibrate=false, default: 1000
       tag: 'some_tag', // (optional) add tag to message

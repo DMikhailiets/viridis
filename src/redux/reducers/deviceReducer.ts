@@ -6,6 +6,7 @@ import { decodeDataFromBinary } from "../../utils"
 
 let initialState: DeviceReducerState = {
     device: null,
+    isConnected: false,
     scannedDevicesList: [],
     currentValue: null,
     notifications: {
@@ -17,7 +18,6 @@ let initialState: DeviceReducerState = {
 }
 
 let deviceReducer = (state: AppState = initialState, action: any) => {
-    //debugger
     switch(action.type) {
         case('SET_FOUND_DEVICE'): {
             if(state.scannedDevicesList.every((device: Device) => device.id != action.device.id)){
@@ -34,6 +34,11 @@ let deviceReducer = (state: AppState = initialState, action: any) => {
                 ...state, device: action.deviceData
             }
         }
+        case ('SET_IS_CONNECTED'): {
+            return {
+                ...state, isConnected: action.isConnected
+            }
+        }
         case('SET_ALL_SERVICES_AND_CHARACTERISTICS'): {
             
             return {
@@ -47,12 +52,11 @@ let deviceReducer = (state: AppState = initialState, action: any) => {
             return {
                 ...state, notifications: {
                     ...state.notifications,
-                    criticalValue: true,
+                    criticalValue: action.status,
                 }
             }
         }
         case('SET_DISCONNECTED_NOTIFICATION_STATUS'): {
-            debugger
             return {
                 ...state, notifications: {
                     ...state.notifications,
@@ -70,9 +74,7 @@ let deviceReducer = (state: AppState = initialState, action: any) => {
         }
         case('SET_MEASUREMENTS'): {
             let measurement = decodeDataFromBinary(action.measurement)
-            //debugger
             if(state.allMeasurements[state.allMeasurements.length -1].SequenceNumber !== measurement.SequenceNumber){
-                //debugger
                 if ( parseFloat(measurement.glucose) > 7) {
                     return {
                         ...state, notifications: {
@@ -109,6 +111,7 @@ export const setAllMeasurements = ((allMeasurements: any) => ({type: 'SET_ALL_ME
 export const setCriticalValueNotificationStatus = ((status: boolean) => ({type: 'SET_CRITICAL_VALUE_NOTIFICATION_STATUS', status})) 
 export const setDisconnectedNotificationStatus = ((status: boolean) => ({type: 'SET_DISCONNECTED_NOTIFICATION_STATUS', status}))
 export const setDeviceData = ((deviceData: Device) => ({type: 'SET_DEVICE_DATA', deviceData}))
+export const setIsConnected = ((isConnected: boolean) => ({type: 'SET_IS_CONNECTED', isConnected}))
 export const setFoundDevice = ((device: Device) => ({type: 'SET_FOUND_DEVICE', device}))
 export const setAllServices = ((allServices: any) => ({type: 'SET_ALL_SERVICES_AND_CHARACTERISTICS', allServices}))
 export const setMeasurements = ((measurement: any) => ({type: 'SET_MEASUREMENTS', measurement}))

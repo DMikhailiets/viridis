@@ -23,7 +23,7 @@ const LocationDisabledModal = () => {
           <View style={styles.modalView}>
           <View style={styles.errorMessage}>
             <Ionicons style={styles.bluetoothLogo} name="md-navigate"></Ionicons>
-            <Text style={styles.errorMessageText}>Location is disabled. Enable it to get started</Text>
+            <Text style={styles.errorMessageText}>Location is disabled. Enable it and relaunch app</Text>
             <Pressable
               style={[styles.button, styles.buttonClose]}
               onPress={() => setModalVisible(!modalVisible)}

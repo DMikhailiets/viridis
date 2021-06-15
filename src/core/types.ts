@@ -18,6 +18,7 @@ export type MDevice = {
 } | null
 
 export type DeviceReducerState = {
+    isConnected: boolean,
     device: Device | null,
     scannedDevicesList: MDevice[] | [],
     currentValue: any,

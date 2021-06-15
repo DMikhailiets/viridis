@@ -5,7 +5,7 @@ import { fetchAppData, fetchAverage, fetchDeviceData, fetchMeasurements, fetchSc
 import { AppState } from '../../../redux/store'
 import MainScreenComponent from '../component/mainScreen'
 import { statusList } from '../../../core/enums'
-import { fetchCurrentValue } from '../../../redux/selectors/deviceSelector'
+import { fetchCurrentValue, fetchIsConnected } from '../../../redux/selectors/deviceSelector'
 let MainScreenContainer: React.FC<any> = (
     { 
         deviceData, 
@@ -22,6 +22,7 @@ let MainScreenContainer: React.FC<any> = (
         checkBluetoothStatus,
         waitBluetoothEnable,
         currentValue,
+        isConnected
     }) => {
     
     useEffect(() => {
@@ -73,6 +74,7 @@ let MainScreenContainer: React.FC<any> = (
                 appData={appData}
                 average={average}
                 currentValue={currentValue}
+                isConnected={isConnected}
             />
 } 
 
@@ -83,7 +85,8 @@ export default connect(
         appData: fetchAppData(state),
         measurements: fetchMeasurements(state),
         average: fetchAverage(state),
-        currentValue: fetchCurrentValue(state)
+        currentValue: fetchCurrentValue(state),
+        isConnected: fetchIsConnected(state)
     }), {
         scanDevices,
         connectToDevice,

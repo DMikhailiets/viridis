@@ -20,13 +20,13 @@ const styles = StyleSheet.create({
       borderRadius: 10,
       borderWidth: 1,
       borderColor: "#38C0F3",
-      height: 50,
+      height: 200,
       flexDirection:'row',
-      justifyContent: 'space-between',
+      justifyContent: 'center',
       alignItems: 'center'
     },
     subCart: {
-      width: 50,
+      width: 10,
       height: '100%',
       borderTopLeftRadius: 10,
       borderBottomLeftRadius: 10,
@@ -42,7 +42,8 @@ const styles = StyleSheet.create({
       height: '100%',
       flex: 1,
       justifyContent: 'center',
-      alignItems: 'center'
+      alignItems: 'flex-start',
+      paddingLeft: 20
     },
     title: {
       fontSize: 35,

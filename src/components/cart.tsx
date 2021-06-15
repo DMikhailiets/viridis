@@ -1,31 +1,44 @@
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons } from '@expo/vector-icons'
 import React from 'react'
-import { StyleSheet } from 'react-native';
-import { divide } from 'react-native-reanimated'
-import { Text, View } from '../../components/Themed';
-
+import { StyleSheet } from 'react-native'
+import { Text, View } from '../../components/Themed'
+import moment from 'moment'
+ 
 let Cart = (props: any) => {
+  const data = props.currentValue[1]
   return(
-        <View style={styles.cart}>
-            <View style={styles.subCart}>
-              <View style={styles.arrowWrapper}>
-              {
-                props.currentValue[1].glucose > props.currentValue[0].glucose
-                ? <Ionicons style={styles.arrow} name="ios-arrow-dropup"></Ionicons>
-                : <Ionicons style={styles.arrow} name="ios-arrow-dropdown"></Ionicons>
-              }
-              
-    <Text style={styles.title}>{`${props.currentValue[1].glucose}`}</Text>
-              </View>
-              <Text style={styles.text}>current value</Text>
-            </View>
-            <View style={styles.subCart1}>
-              {/* <Text>{ props.glucose.date }</Text> */}
-  {/* <Text style={styles.textIn}>{props.currentValue.date}</Text> */}
-  <Text style={styles.textIn}>critical level is 7 mol/l</Text>
-            </View>
+    <View style={styles.cart}>
+      <View style={styles.subCart}>
+        <View style={styles.arrowWrapper}>
+          {
+            data.glucose > props.currentValue[0].glucose
+            ? <Ionicons style={styles.arrow} name="ios-arrow-dropup"></Ionicons>
+            : <Ionicons style={styles.arrow} name="ios-arrow-dropdown"></Ionicons>
+          }
+          <Text style={styles.title}>{`${props.currentValue[1].glucose}`}</Text>
         </View>
-    )
+        {
+          props.isConnected 
+          ? <View style={styles.deviceStatus}>
+              <Text style={styles.text}>connected </Text>
+              <Ionicons style={styles.success} name="ios-checkmark-circle-outline"></Ionicons>
+            </View>
+          : <View style={styles.deviceStatus}>
+              <Text style={styles.text}>device not found </Text> 
+              <Ionicons style={styles.notFound} name="ios-close-circle"></Ionicons>
+            </View>
+          
+        }
+      </View>
+      <View style={styles.subCart1}>
+        <Text style={styles.textIn}>critical level is 7 mol/l</Text>
+        <Text style={styles.textIn}>sequence number: {data.SequenceNumber}</Text>
+        <Text style={styles.textIn}>base time: {data.BaseTime}</Text>
+        <Text style={styles.textIn}>time offset: {data.TimeOffset}</Text>
+        <Text style={styles.textIn}>recieved at: {moment(data.date).format("hh:mm:ss DD.MM.YY")}</Text>
+      </View>
+    </View>
+  )
 }
 export default Cart
 
@@ -35,7 +48,7 @@ const styles = StyleSheet.create({
       alignItems: 'center',
       justifyContent: 'center',
       width: '90%',
-      marginTop: 60,
+      marginTop: 40,
       backgroundColor: 'white',
       color: 'white',
       borderRadius: 15,
@@ -60,8 +73,9 @@ const styles = StyleSheet.create({
       borderBottomLeftRadius: 15, 
       borderBottomRightRadius: 15,
       flex: 1,
+      paddingLeft: 40,
       justifyContent: 'center',
-      alignItems: 'center'
+      alignItems: 'flex-start'
       
     },
     container: {
@@ -91,8 +105,25 @@ const styles = StyleSheet.create({
       color: '#38C0F3',
       paddingRight: 20
     },
+    success: {
+      fontSize: 30,
+      color: '#19FF19',
+      paddingRight: 20
+    },
+    notFound: {
+      fontSize: 30,
+      color: '#FF2020',
+      paddingRight: 20
+    },
     arrowWrapper: {
       flex: 1,
+      flexDirection: 'row',
+      justifyContent: 'center',
+      alignItems: 'center'
+    },
+    deviceStatus: {
+      flex: 1,
+      flexGrow: 1,
       flexDirection: 'row',
       justifyContent: 'center',
       alignItems: 'center'

@@ -9,7 +9,7 @@ let DebugComponent: React.FC<DebugComponentPropsType> = ({log, resetMeasurements
 let logArray = log.map((log: string) => <Text key={log}>{log}</Text>)
     return (
         <View style={styles.container}>
-            <ScrollView>
+            <ScrollView style={styles.scrollView}>
                 {logArray}
             </ScrollView>
             <View style={styles.buttonsWrapper}>

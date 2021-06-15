@@ -11,9 +11,8 @@ const contentInset = { top: 20, bottom: 20 }
 
 let ChartComponent: React.FC<ChartComponentsPropsType> = ({allMeasurements}) => {
     const values = allMeasurements.map((measurement: any) => parseFloat(measurement.glucose))
-    const dates = allMeasurements.map((measurement: any) => moment(measurement.date).format('DD.MM.YYYY'))
+    const dates = allMeasurements.map((measurement: any) => moment(measurement.date).format('hh:mm:ss') + '\n' + moment(measurement.date).format('DD.MM.YYYY'))
     const data = values//[0.50, 0.10, 0.40, 0.95, 0.4, 0.24, 0.85, 0.91, 0.35, 0.53, 0.53, 0.24, 0.50, 0.20, 0.80]
-    // debugger
     return (
     <ScrollView horizontal={true}>
         <View style={styles.container} >
@@ -25,6 +24,7 @@ let ChartComponent: React.FC<ChartComponentsPropsType> = ({allMeasurements}) => 
         numberOfTicks={10}
         formatLabel={(value) => `  ${value}`}
       />
+      
       <View style={{width: '100%', height: 600, paddingLeft: 20}}>
         <LineChart
           style={{ height: 600, width: '100%' }}

@@ -2,10 +2,11 @@ import redux from 'redux'
 import { AppState } from "../store"
 import { AppReducerState } from "../../core/types"
 import { BleError, BleManager, Device } from 'react-native-ble-plx'
-import { resetReduxtData, setAllMeasurements, setAllServices, setDeviceData, setDisconnectedNotificationStatus, setFoundDevice, setLocalstorageData, setMeasurements } from "./deviceReducer"
+import { resetReduxtData, setAllMeasurements, setAllServices, setDeviceData, setDisconnectedNotificationStatus, setFoundDevice, setIsConnected, setLocalstorageData, setMeasurements } from "./deviceReducer"
 import { statusList } from '../../core/enums'
 import { decodeDataFromBinary, delay } from '../../utils'
 import storageApi from '../../localStorage'
+import moment from 'moment'
 
 const manager = new BleManager()
 
@@ -23,18 +24,16 @@ let appReducer = (state: AppState = initialState, action: any) => {
         }
         case('SET_LOG_MESSAGE'): {
             if( state.log.length === 0 || (state.log[state.log.length -1] && !state.log[state.log.length -1].includes(action.logMessage))){
-                let date = new Date()
                 return {
-                    ...state, log: [ ...state.log, `${date.getFullYear()}.${date.getMonth()}.${date.getDate()} ${date.getHours()}:${date.getMinutes()}:${date.getSeconds()} ${action.logMessage}`]
+                    ...state, log: [ ...state.log, `${moment(new Date()).format("hh:mm:ss DD.MM.YY")} ${action.logMessage}`]
                 } 
             } else {
                 return state
             }
         }
         case('SET_ERROR_MESSAGE'): {
-            let date = new Date()
             return {
-                ...state, log: [...state.log, `${date.getFullYear()}.${date.getMonth()}.${date.getDate()} ${date.getHours()}:${date.getMinutes()}:${date.getSeconds()} ${action.errorMessage}`]
+                ...state, log: [...state.log, `${moment(new Date()).format("hh:mm:ss DD.MM.YY")} ${action.errorMessage}`]
             }
         }
         case('SET_SERVICES_AND_CHARACTERISTICS'): {
@@ -55,12 +54,13 @@ export const scanDevices = () => async (dispatch: redux.Dispatch) => {
         dispatch(setLog('Scanning...'))
         if(device != null) dispatch(setFoundDevice(device))
         if (error) {
-            dispatch(setError(error + '010'))
+            dispatch(setError(error+''))
             dispatch(setStatus(statusList.geolocationError))
         }
         if (device && device.name?.toLowerCase().includes('viridis')){
             dispatch(setLog("Viridis Libre device was found"))
             dispatch(setDeviceData(device))
+            dispatch(setIsConnected(true))
             manager.stopDeviceScan()
             dispatch(setStatus(statusList.deviceIsFound))
         }
@@ -82,7 +82,7 @@ export const connectToDevice = (device: any, deviceStatus: number) => async (dis
         dispatch(setStatus(statusList.deviceIsConnected))
     } catch(error){
         dispatch(setError(error + ''))
-        console.log(error + '404')
+        console.log(error + ' 404')
         await manager.cancelDeviceConnection(device.id)
         dispatch(setStatus(statusList.connectionError))
     } 
@@ -108,6 +108,7 @@ export const getAllCharachteristicsData = (deviceId: string, serviceUUID: string
             previousData.push(response)
             if (response.BaseTime === '0:0:0') {
                 dispatch(setAllMeasurements(characteristic.value))
+                dispatch(setLog("All measurements was received"))
                 dispatch(setStatus(statusList.allMeasurementsWasReceived))
                 storageApi.storeArrayDataInLocalStorage(previousData)
                 return subscription.remove()
@@ -130,14 +131,16 @@ export const getLastMeasurement = (deviceId: string, serviceUUID: string, mainCh
                 if (error) {
                     connection1.remove()
                     connection2.remove()
-                    console.log(error + ' 403')
+                    dispatch(setError(error + ' 403'))
                     dispatch(setStatus(statusList.connectionError))
-                    debugger
+                    dispatch(setIsConnected(false))
                     dispatch(setDisconnectedNotificationStatus(true))
                 }
                 let response = decodeDataFromBinary(characteristic.value)
                 storageApi.storeDataInLocalStorage(response)
+                dispatch(setIsConnected(true))
                 dispatch(setMeasurements(characteristic.value))
+                dispatch(setLog(`value: ${JSON.stringify(decodeDataFromBinary(characteristic.value))}`))
             }) 
         const connection2 = manager.monitorCharacteristicForDevice( deviceId, serviceUUID, characteristicUUID2,
         (error, characteristic: any) => {})     
@@ -163,6 +166,7 @@ const getCharacteristics = async (array: any, deviceId: string) => {
 export const errorHandler = (deviceId: any) => async (dispatch: redux.Dispatch) => {
     if (!await manager.isDeviceConnected(deviceId)) {
         dispatch(setStatus(statusList.deviceIsFound))
+        // dispatch(setIsConnected(true))
     } 
 }
 
@@ -172,14 +176,12 @@ export const connectionErrorHandler = () => async (dispatch: redux.Dispatch) => 
 
 export const getLocalstorageData = () => async (dispatch: redux.Dispatch) => {
     const storageData = await storageApi.getDataFromLocalStorage()
-    console.log(storageData)
     dispatch(setLocalstorageData(storageData))
     return
 }
 
 export const checkBluetoothStatus = () => async (dispatch: redux.Dispatch) => {
     const status = await manager.state()
-    console.log(status)
     switch (status) {
         case 'Unknown': { 
             dispatch(setStatus(statusList.bluetoothError))
@@ -203,11 +205,11 @@ export const checkBluetoothStatus = () => async (dispatch: redux.Dispatch) => {
     }
         case 'PoweredOff': { 
             dispatch(setStatus(statusList.bluetoothError))
-            dispatch(setLog('Error:  Bluetooth is currently powered off.'))
+            dispatch(setLog('Error:  Bluetooth is powered off.'))
             break
     }
         case 'PoweredOn': { 
-            dispatch(setLog('Bluetooth is currently powered on and available to use!'))
+            dispatch(setLog('Bluetooth is powered on.'))
             dispatch(setStatus(statusList.bluetoothIsEnabled))
             break
     }

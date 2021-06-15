@@ -11,6 +11,9 @@ const styles = StyleSheet.create({
       paddingHorizontal: 20,
       paddingVertical: 20
     },
+    scrollView: {
+      height: 500
+    },
     measurementsWrapper: {
       flex: 1,
       flexDirection: 'column',
