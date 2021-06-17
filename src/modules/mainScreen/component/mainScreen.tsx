@@ -8,6 +8,7 @@ import { statusList } from '../../../core/enums'
 let MainScreenComponent: React.FC<any> = (
   {
     appData,
+    deviceData,
     isConnected,
     average,
     currentValue
@@ -43,7 +44,7 @@ let MainScreenComponent: React.FC<any> = (
             currentValue.length === 2
             ? <View style={styles.measurementsWrapper}>
                 <LocationDisabledModal/>
-                <Cart currentValue={currentValue} isConnected={isConnected} average={average}/>          
+                <Cart deviceData={deviceData} currentValue={currentValue} isConnected={isConnected} average={average}/>          
               </View>
             : <ActivityIndicator size="large" color="#38C0F3" />
           }
@@ -53,7 +54,7 @@ let MainScreenComponent: React.FC<any> = (
         {
           currentValue.length === 2 && appData.appStatus !== statusList.isOnGetAllMeasurements
           ? <View style={styles.measurementsWrapper}>
-             <Cart currentValue={currentValue} isConnected={isConnected} average={average}/>          
+             <Cart deviceData={deviceData} currentValue={currentValue} isConnected={isConnected} average={average}/>          
             </View>
           : <ActivityIndicator size="large" color="#38C0F3" />
         }

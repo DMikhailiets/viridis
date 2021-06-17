@@ -33,7 +33,7 @@ export type DeviceReducerState = {
 
 export type AppReducerState = {
     appStatus: number
-    log: []
+    log: string[]
 }
 
 export type MainScreenContainerPropsType = {

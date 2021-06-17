@@ -31,6 +31,11 @@ let Cart = (props: any) => {
         }
       </View>
       <View style={styles.subCart1}>
+        {
+          props.deviceData 
+          ? <Text style={styles.textInBig}>{props.deviceData.name}</Text>
+          : <React.Fragment/>
+        }
         <Text style={styles.textIn}>critical level is 7 mol/l</Text>
         <Text style={styles.textIn}>sequence number: {data.SequenceNumber}</Text>
         <Text style={styles.textIn}>base time: {data.BaseTime}</Text>
@@ -97,6 +102,11 @@ const styles = StyleSheet.create({
     textIn: {
       color: '#fff',
       fontSize: 25,
+      fontWeight: '100',
+    },
+    textInBig: {
+      color: '#fff',
+      fontSize: 35,
       fontWeight: '100',
     },
     arrow: {

@@ -7,11 +7,12 @@ import { statusList } from '../../core/enums'
 import { decodeDataFromBinary, delay } from '../../utils'
 import storageApi from '../../localStorage'
 import moment from 'moment'
+import BackgroundService from 'react-native-background-actions'
 
 const manager = new BleManager()
 
 let initialState: AppReducerState = {
-    log: [],
+    log: ['Viridis_v0.72'],
     appStatus: statusList.opened
 }
   
@@ -25,7 +26,7 @@ let appReducer = (state: AppState = initialState, action: any) => {
         case('SET_LOG_MESSAGE'): {
             if( state.log.length === 0 || (state.log[state.log.length -1] && !state.log[state.log.length -1].includes(action.logMessage))){
                 return {
-                    ...state, log: [ ...state.log, `${moment(new Date()).format("hh:mm:ss DD.MM.YY")} ${action.logMessage}`]
+                    ...state, log: [ ...state.log, `[${moment(new Date()).format("hh:mm:ss DD.MM.YY")}] ${action.logMessage}`]
                 } 
             } else {
                 return state
@@ -33,7 +34,7 @@ let appReducer = (state: AppState = initialState, action: any) => {
         }
         case('SET_ERROR_MESSAGE'): {
             return {
-                ...state, log: [...state.log, `${moment(new Date()).format("hh:mm:ss DD.MM.YY")} ${action.errorMessage}`]
+                ...state, log: [...state.log, `[${moment(new Date()).format("hh:mm:ss DD.MM.YY")}] ${action.errorMessage}`]
             }
         }
         case('SET_SERVICES_AND_CHARACTERISTICS'): {
@@ -103,6 +104,7 @@ export const getAllCharachteristicsData = (deviceId: string, serviceUUID: string
         (error, characteristic: any) => {
             if (error) {
                 console.log(error)
+                dispatch(setError(error + ' 407'))
             }
             let response = decodeDataFromBinary(characteristic.value)
             previousData.push(response)
@@ -119,7 +121,7 @@ export const getAllCharachteristicsData = (deviceId: string, serviceUUID: string
         (error, characteristic: any) => {}) 
         await manager.writeCharacteristicWithResponseForDevice(deviceId, serviceUUID, characteristicUUID2, 'AQE=')  
     } catch (error) {
-        dispatch(setError(error + '401'))
+        dispatch(setError(error + ' 401'))
     }
 }
 
@@ -140,13 +142,17 @@ export const getLastMeasurement = (deviceId: string, serviceUUID: string, mainCh
                 storageApi.storeDataInLocalStorage(response)
                 dispatch(setIsConnected(true))
                 dispatch(setMeasurements(characteristic.value))
-                dispatch(setLog(`value: ${JSON.stringify(decodeDataFromBinary(characteristic.value))}`))
+                let plainData = (decodeDataFromBinary(characteristic.value))
+                dispatch(setLog(
+                `new value: glucose: ${plainData.glucose}, sequenceNumber: ${plainData.SequenceNumber}, baseTime: ${plainData.SequenceNumber}, timeOffset: ${plainData.TimeOffset}`
+                ))
             }) 
         const connection2 = manager.monitorCharacteristicForDevice( deviceId, serviceUUID, characteristicUUID2,
         (error, characteristic: any) => {})     
+      
         while (appStatus === statusList.allMeasurementsWasReceived) {
                 await manager.writeCharacteristicWithResponseForDevice(deviceId, serviceUUID, characteristicUUID2, 'AQY=')
-                await delay(10000)
+            await delay(10000)
             }
     } catch (error) {
         dispatch(setError(error + ' 402'))
