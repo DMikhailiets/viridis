@@ -9,7 +9,15 @@ import storageApi from '../../localStorage'
 import moment from 'moment'
 import BackgroundService from 'react-native-background-actions'
 
-const manager = new BleManager()
+const restore_state_identifier = 'manager';
+const restore_state_function = async (restored_state: any) => {
+  console.log('Restored State: ', restored_state);
+  const connected_devices = await restored_state.connectedDevices();
+  console.log('Connected Devices: ', connected_devices);
+  // do what you need with the devices_connected
+}
+
+const manager = new BleManager({restoreStateIdentifier: restore_state_identifier, restoreStateFunction: restore_state_function})
 
 let initialState: AppReducerState = {
     log: ['Viridis_v0.72'],
@@ -149,9 +157,9 @@ export const getLastMeasurement = (deviceId: string, serviceUUID: string, mainCh
             }) 
         const connection2 = manager.monitorCharacteristicForDevice( deviceId, serviceUUID, characteristicUUID2,
         (error, characteristic: any) => {})     
-      
+        
         while (appStatus === statusList.allMeasurementsWasReceived) {
-                await manager.writeCharacteristicWithResponseForDevice(deviceId, serviceUUID, characteristicUUID2, 'AQY=')
+            await manager.writeCharacteristicWithResponseForDevice(deviceId, serviceUUID, characteristicUUID2, 'AQY=')
             await delay(10000)
             }
     } catch (error) {
