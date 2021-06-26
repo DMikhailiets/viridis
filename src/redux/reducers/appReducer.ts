@@ -7,7 +7,6 @@ import { statusList } from '../../core/enums'
 import { decodeDataFromBinary, delay } from '../../utils'
 import storageApi from '../../localStorage'
 import moment from 'moment'
-import BackgroundService from 'react-native-background-actions'
 
 const restore_state_identifier = 'manager';
 const restore_state_function = async (restored_state: any) => {
@@ -160,7 +159,7 @@ export const getLastMeasurement = (deviceId: string, serviceUUID: string, mainCh
         
         while (appStatus === statusList.allMeasurementsWasReceived) {
             await manager.writeCharacteristicWithResponseForDevice(deviceId, serviceUUID, characteristicUUID2, 'AQY=')
-            await delay(10000)
+            await delay(30000)
             }
     } catch (error) {
         dispatch(setError(error + ' 402'))

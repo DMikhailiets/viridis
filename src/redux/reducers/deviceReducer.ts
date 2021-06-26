@@ -3,6 +3,7 @@ import redux from 'redux'
 import { Device } from "react-native-ble-plx"
 import { DeviceReducerState} from "../../core/types"
 import { decodeDataFromBinary } from "../../utils"
+import backgroundService from '../../utils/background.js'
 
 let initialState: DeviceReducerState = {
     device: null,
@@ -74,8 +75,9 @@ let deviceReducer = (state: AppState = initialState, action: any) => {
         }
         case('SET_MEASUREMENTS'): {
             let measurement = decodeDataFromBinary(action.measurement)
+            backgroundService.Start(measurement.glucose)
             if(state.allMeasurements[state.allMeasurements.length -1].SequenceNumber !== measurement.SequenceNumber){
-                if ( parseFloat(measurement.glucose) > 7) {
+                if ( parseFloat(measurement.glucose) > 5) {
                     return {
                         ...state, notifications: {
                             ...state.notifications,

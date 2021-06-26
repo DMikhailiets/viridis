@@ -43,6 +43,8 @@
     android:allowBackup="true"
     android:theme="@style/AppTheme"
   >
+      <!-- for react-native-background-actions -->
+    <service android:name="com.asterinet.react.bgactions.RNBackgroundActionsTask" />
   <!-- for react-native-push-notification -->
     <meta-data  android:name="com.dieam.reactnativepushnotification.notification_foreground"
                 android:value="false"/>
