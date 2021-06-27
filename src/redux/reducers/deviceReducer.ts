@@ -77,7 +77,7 @@ let deviceReducer = (state: AppState = initialState, action: any) => {
             let measurement = decodeDataFromBinary(action.measurement)
             backgroundService.Start(measurement.glucose)
             if(state.allMeasurements[state.allMeasurements.length -1].SequenceNumber !== measurement.SequenceNumber){
-                if ( parseFloat(measurement.glucose) > 5) {
+                if ( parseFloat(measurement.glucose) > 7) {
                     return {
                         ...state, notifications: {
                             ...state.notifications,

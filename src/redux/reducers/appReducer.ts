@@ -19,7 +19,7 @@ const restore_state_function = async (restored_state: any) => {
 const manager = new BleManager({restoreStateIdentifier: restore_state_identifier, restoreStateFunction: restore_state_function})
 
 let initialState: AppReducerState = {
-    log: ['Viridis_v0.72'],
+    log: ['Viridis_v0.73'],
     appStatus: statusList.opened
 }
   

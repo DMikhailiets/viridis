@@ -13,10 +13,11 @@ class BService
                 name: 'ic_launcher',
                 type: 'mipmap',
             },
-            color: '#38C0F3',
+            color: '#ffffff',
             parameters: {
                 delay: 20000,
             },
+            linkingURI: 'Viridis', // Add this
             // actions: '["Exit"]'
         };
 
@@ -50,8 +51,8 @@ async VeryIntensiveTask(taskDataArguments){
     Start(value) {
         BackgroundService.start(this.VeryIntensiveTask, {
             ...this.Options,
-            taskTitle: ` `,
-            taskDesc: `Current value is: ${value}`
+            taskTitle: `Current value is: ${value}`,
+            taskDesc: ``
         });
     }
     Stop() {
