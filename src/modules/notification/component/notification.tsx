@@ -30,8 +30,8 @@ class Notification extends Component<NotificationComponentPropsType> {
   }
   render() {
     return (
-      <>{this.props.criticalValue ? this.CreateNotif({title: 'Внимание', message: 'Уровень сахара в крови достиг критических значений!'},'CRITICALVALUE', this.props) :<></>}
-        {this.props.disconnected ? this.CreateNotif({title: 'Внимание', message: 'Потерено соединение с устройством!'}, 'DISCONNECTED', this.props) :<></>}
+      <>{this.props.criticalValue ? this.CreateNotif({title: 'Attention', message: 'Glucose level ​has reached critical value!'},'CRITICALVALUE', this.props) :<></>}
+        {this.props.disconnected ? this.CreateNotif({title: 'Attention', message: 'Device connection is lost!'}, 'DISCONNECTED', this.props) :<></>}
       </>
     )
   }
