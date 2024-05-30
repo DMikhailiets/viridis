@@ -32,10 +32,10 @@ const styles = StyleSheet.create({
       
     },
     buttonOpen: {
-      backgroundColor: "#38C0F3",
+      backgroundColor: "#A6D7D4",
     },
     buttonClose: {
-      backgroundColor: "#38C0F3",
+      backgroundColor: "#A6D7D4",
     },
     textStyle: {
       color: "white",
@@ -49,16 +49,18 @@ const styles = StyleSheet.create({
     errorMessage: {
         flex: 1,
         flexGrow: 1,
+        // width: 300,
         flexDirection: 'row',
         justifyContent: 'space-between',
-        alignItems: 'center'
+        alignItems: 'center',
     },
     errorMessageText: {
-        paddingRight: 10
+      width: 250
+        // paddingRight: 10
     },
     bluetoothLogo: {
-        //marginLeft: 20,
-        paddingLeft: 10,
+        marginLeft: 10,
+        paddingLeft: 30,
         marginRight: 20,
         fontSize: 30
     }

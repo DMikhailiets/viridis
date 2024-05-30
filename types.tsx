@@ -15,3 +15,10 @@ export type TabOneParamList = {
 export type TabTwoParamList = {
   TabTwoScreen: undefined;
 };
+
+export interface MeasurementValue {
+  glucose: string,
+  BaseTime: string,
+  TimeOffset: number,
+  date: string
+}

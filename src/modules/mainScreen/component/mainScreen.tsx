@@ -1,9 +1,10 @@
 import React from 'react'
 import { View, ActivityIndicator } from 'react-native'
 import { Text } from '../../../../components/Themed'
-import { Cart, BluetoothDisabledModal, LocationDisabledModal } from '../../../components'
+import { BluetoothDisabledModal, LocationDisabledModal } from '../../../components'
 import styles from './mainScreenStyle'
 import { statusList } from '../../../core/enums'
+import MainScreenCart from '../../../components/mainScreenCart/mainScreenCart'
 
 let MainScreenComponent: React.FC<any> = (
   {
@@ -11,7 +12,8 @@ let MainScreenComponent: React.FC<any> = (
     deviceData,
     isConnected,
     average,
-    currentValue
+    currentValue,
+    lastMeasurements
   }) => {
     switch (appData.appStatus) {
       case statusList.opened: 
@@ -19,7 +21,7 @@ let MainScreenComponent: React.FC<any> = (
       case statusList.deviceIsFound: 
       case statusList.deviceIsConnected: 
       case statusList.allMeasurementsWasReceived: {
-        <ActivityIndicator size="large" color="#38C0F3" />
+        <ActivityIndicator size="large" color="#A6D7D4" />
       }
       case statusList.connectionError: {
         return  <View style={styles.container}><Text>Connection error</Text></View>
@@ -31,9 +33,9 @@ let MainScreenComponent: React.FC<any> = (
             currentValue.length === 2
             ? <View style={styles.measurementsWrapper}>
                 <BluetoothDisabledModal/>
-                <Cart currentValue={currentValue} isConnected={isConnected} average={average}/>          
+                <MainScreenCart currentValue={currentValue} isConnected={isConnected} lastMeasurements={lastMeasurements}/>          
               </View>
-            : <ActivityIndicator size="large" color="#38C0F3" />
+            : <ActivityIndicator size="large" color="#A6D7D4" />
           }
         </View>)
       }
@@ -44,7 +46,7 @@ let MainScreenComponent: React.FC<any> = (
             currentValue.length === 2
             ? <View style={styles.measurementsWrapper}>
                 <LocationDisabledModal/>
-                <Cart deviceData={deviceData} currentValue={currentValue} isConnected={isConnected} average={average}/>          
+                <MainScreenCart currentValue={currentValue} isConnected={isConnected} lastMeasurements={lastMeasurements}/>        
               </View>
             : <ActivityIndicator size="large" color="#38C0F3" />
           }
@@ -54,7 +56,7 @@ let MainScreenComponent: React.FC<any> = (
         {
           currentValue.length === 2 && appData.appStatus !== statusList.isOnGetAllMeasurements
           ? <View style={styles.measurementsWrapper}>
-             <Cart deviceData={deviceData} currentValue={currentValue} isConnected={isConnected} average={average}/>          
+             <MainScreenCart currentValue={currentValue} isConnected={isConnected} lastMeasurements={lastMeasurements}/>        
             </View>
           : <ActivityIndicator size="large" color="#38C0F3" />
         }

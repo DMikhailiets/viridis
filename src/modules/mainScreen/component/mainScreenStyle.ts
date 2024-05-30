@@ -7,6 +7,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     flexDirection: 'column',
+    paddingBottom: 50,
     minHeight: '100%'
   },
   measurementsWrapper: {

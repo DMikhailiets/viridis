@@ -19,8 +19,8 @@ const styles = StyleSheet.create({
     color: 'white',
     borderRadius: 10,
     borderWidth: 1,
-    borderColor: "#38C0F3",
-    height: 200,
+    borderColor: "white",
+    height: 80,
     flexDirection:'row',
     justifyContent: 'center',
     alignItems: 'center'
@@ -36,7 +36,7 @@ const styles = StyleSheet.create({
   },
   subCart1: {
     width: 20,
-    backgroundColor: "#38C0F3",
+    backgroundColor: "#A6D7D4",
     borderBottomRightRadius: 10, 
     borderTopRightRadius: 10,      
     height: '100%',
@@ -47,12 +47,12 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 35,
-    color: '#38C0F3',
+    color: '#A6D7D4',
     fontFamily: 'Montserrat',
     fontWeight: '100',
   },
   text: {
-    color: '#38C0F3',
+    color: '#A6D7D4',
     fontSize: 20,
     fontWeight: '100',
   },

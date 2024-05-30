@@ -1,16 +1,9 @@
 import { StyleSheet } from 'react-native'
 
 const styles = StyleSheet.create({
-  cart: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    width: '90%',
-    margin: 25,
+  gradient: {
+    flexDirection: "row",
     height: '100%',
-    backgroundColor: 'black',
-    color: 'white',
-    borderRadius: 20,
   },
   chartWrapper: {
     flex: 1,
@@ -26,7 +19,7 @@ const styles = StyleSheet.create({
     maxWidth: 4000,
     height: '100%',
     paddingHorizontal: 40,
-    backgroundColor: 'white'
+    // backgroundColor: 'white'
   },
   title: {
     fontSize: 20,

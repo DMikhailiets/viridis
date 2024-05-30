@@ -1,37 +1,60 @@
-import moment from 'moment'
-import React from 'react'
-import { View, Text } from 'react-native'
-import { ScrollView } from 'react-native-gesture-handler'
-import styles from './allMeasurementsStyles'
+import moment from "moment";
+import React, { FC, useEffect, useState } from "react";
+import { View, Text, ActivityIndicator } from "react-native";
+import { ScrollView } from "react-native-gesture-handler";
+import styles from "./allMeasurementsStyles";
+import LinearGradient from "react-native-linear-gradient";
+import { MeasurementRow } from "../../../components/measurementRow/measurementRow";
+import { MeasurementValue } from "../../../../types";
 
 let AllMeasurementsComponent: React.FC<any> = (props) => {
+  console.log(">>> ", props.allMeasurements.length);
+  console.log(1);
+  const [loading, setLoading] = useState(true);
+  useEffect(() => {
+    const timerId = setTimeout(() => {
+      setLoading(false);
+    }, 500);
 
-let logArray = props.allMeasurements.map((measurement: any) => <Cart key={measurement.id} {...measurement}>{measurement.glucose}</Cart>)
+    return () => clearTimeout(timerId); // Очистка таймера при демонтировании компонента
+  }, []);
+  const logArray = [...props.allMeasurements].reverse().map((measurement: any) => (
+    <Cart key={measurement.id} measurement={{...measurement}}>
+      {measurement.glucose}
+    </Cart>
+  ));
+  console.log(2);
   return (
     <View style={styles.container}>
-      <ScrollView>{logArray}</ScrollView>
+      {loading || !props.allMeasurements.length ? (
+        <View
+          style={{
+            flex: 1,
+            justifyContent: "center",
+          }}
+        >
+          <ActivityIndicator size="large" color="#white" />
+        </View>
+      ) : (
+        <ScrollView>{logArray}</ScrollView>
+      )}
     </View>
-  )
+  );
+};
+
+export default AllMeasurementsComponent;
+
+interface CartPropsType {
+  measurement: MeasurementValue
 }
 
-export default AllMeasurementsComponent
-
-let Cart = (props: any) => {
-  return(
+let Cart: FC<CartPropsType> = ({measurement}) => {
+  const date = new Date(measurement.date).getTime()
+  const offset = measurement.TimeOffset
+  const result = date - offset
+  return (
     <View style={styles.cart}>
-      <View style={styles.subCart}>
-        <Text style={styles.title}>{props.glucose}</Text>
-      </View>
-      <View style={styles.subCart1}>
-        <Text style={styles.textIn}>sequence number: </Text>
-        <Text style={styles.textIn}>{props.SequenceNumber}</Text>
-        <Text style={styles.textIn}>base time: </Text>
-        <Text style={styles.textIn}>{props.BaseTime}</Text>
-        <Text style={styles.textIn}>time offset: </Text>
-        <Text style={styles.textIn}>{props.TimeOffset}</Text>
-        <Text style={styles.textIn}>recieved at: </Text>
-        <Text style={styles.textIn}>{moment(props.date).format("hh:mm:ss DD.MM.YY")}</Text>
-      </View>
+      <MeasurementRow  measurement={measurement}/>
     </View>
-  )
-}
+  );
+};
